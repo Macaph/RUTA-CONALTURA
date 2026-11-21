@@ -67,7 +67,26 @@
     <section id="pantallaPanel" class="oculto">
 
       <!-- Menú con las opciones del rol (lo arma app.js) -->
-      <nav id="menu" class="menu"></nav>
+      <!-- Barra de navegación: botón de menú (☰), botón Atrás y nombre de la sección -->
+      <div class="barra-navegacion">
+        <button id="botonMenu" class="boton-hamburguesa" aria-label="Abrir menú"
+                aria-expanded="false" aria-controls="menuLateral">
+          <span></span><span></span><span></span>
+        </button>
+        <button id="botonAtras" class="boton-atras oculto">← Atrás</button>
+        <span id="tituloSeccion" class="titulo-seccion">Inicio</span>
+      </div>
+
+      <!-- Menú lateral (se abre con ☰). El fondo oscuro lo cierra al tocarlo. -->
+      <div id="fondoMenu" class="fondo-menu oculto"></div>
+      <nav id="menuLateral" class="menu-lateral" aria-label="Menú principal">
+        <div class="menu-lateral-encabezado">
+          <span>Menú</span>
+          <button id="cerrarMenu" class="cerrar-menu" aria-label="Cerrar menú">✕</button>
+        </div>
+        <!-- Las opciones las crea app.js según el rol -->
+        <div id="menu" class="menu"></div>
+      </nav>
 
       <!-- Aquí se muestra el contenido de la opción elegida -->
       <div id="contenido" class="tarjeta"></div>

@@ -32,26 +32,59 @@ const ROLES = {
   vendedor: {
     nombre: "Vendedor",
     descripcion: "Usa la sala de ventas con los clientes y sube el inventario de su sala.",
+    // Lo que se muestra en la pantalla de Inicio
+    bienvenida: "Desde tu sala de ventas o apartamento modelo puedes:",
+    puedeHacer: [
+      "Registrar el inventario de tu sala, a mano o cargando un Excel.",
+      "Consultar qué elementos hay, en qué estado están y por dónde han pasado.",
+      "Pedir elementos de otra sala o de la bodega.",
+      "Reportar si algo se daña o se pierde, y pedir su reposición."
+    ],
     opciones: ["Ver inventario", "Registrar elementos", "Solicitar elementos", "Reportar novedad"]
   },
   bodeguista: {
     nombre: "Bodeguista",
     descripcion: "Gestiona la bodega, envía y recibe elementos.",
+    bienvenida: "Desde la bodega puedes:",
+    puedeHacer: [
+      "Registrar lo que llega y lo que se guarda en la bodega.",
+      "Despachar los traslados aprobados y confirmar cuando llegan a su destino.",
+      "Consultar el inventario y el historial de todos los traslados."
+    ],
     opciones: ["Ver inventario", "Registrar elementos", "Enviar / Recibir traslados", "Informar traslados"]
   },
   administrador: {
     nombre: "Administrador",
     descripcion: "Acceso completo y control del sistema.",
+    bienvenida: "Como administrador puedes:",
+    puedeHacer: [
+      "Ver y controlar el inventario de todas las salas, apartamentos modelo y la bodega.",
+      "Registrar elementos, que quedan aprobados de una vez.",
+      "Gestionar traslados y compras, y consultar los reportes.",
+      "Ver qué puede hacer cada rol en el sistema."
+    ],
     opciones: ["Ver inventario", "Registrar elementos", "Aprobar inventario", "Traslados", "Compras", "Reportes", "Usuarios"]
   },
   compras: {
     nombre: "Compras",
     descripcion: "Revisa si lo que piden ya existe para reutilizarlo; si no, compra y registra.",
+    bienvenida: "Desde compras puedes:",
+    puedeHacer: [
+      "Revisar si lo que piden las salas ya existe, para reutilizarlo antes de comprar.",
+      "Aprobar compras y registrar lo que llega, con su valor.",
+      "Consultar cuánto se ha gastado y qué se puede reutilizar."
+    ],
     opciones: ["Ver inventario", "Revisar solicitudes de compra", "Registrar compra", "Reportes"]
   },
   coordinador: {
     nombre: "Coordinador",
     descripcion: "Está a cargo de la sala: aprueba el inventario y las solicitudes.",
+    bienvenida: "Como coordinador de las salas puedes:",
+    puedeHacer: [
+      "Revisar y aprobar el inventario que registran las salas, la bodega y compras.",
+      "Aprobar o rechazar los traslados entre salas, apartamentos modelo y bodega.",
+      "Consultar los reportes del estado de cada espacio."
+    ],
     opciones: ["Ver inventario", "Aprobar inventario", "Aprobar solicitudes", "Reportes"]
   }
 };
@@ -69,6 +102,11 @@ const pantallaCargando = document.getElementById("pantallaCargando");
 const pantallaIngreso  = document.getElementById("pantallaIngreso");
 const pantallaPanel    = document.getElementById("pantallaPanel");
 const menu             = document.getElementById("menu");
+const menuLateral      = document.getElementById("menuLateral");
+const fondoMenu        = document.getElementById("fondoMenu");
+const botonMenu        = document.getElementById("botonMenu");
+const botonAtras       = document.getElementById("botonAtras");
+const tituloSeccion    = document.getElementById("tituloSeccion");
 const contenido        = document.getElementById("contenido");
 const cajaUsuario      = document.getElementById("usuarioActual");
 
@@ -124,7 +162,7 @@ function mostrarPanel() {
   pantallaIngreso.classList.add("oculto");
   pantallaPanel.classList.remove("oculto");
 
-  // Arriba a la derecha: rol conectado (con su color) y botón Salir
+  // Arriba a la derecha: rol conectado y botón Salir
   cajaUsuario.classList.remove("oculto");
   cajaUsuario.innerHTML =
     "<span>Conectado como</span>" +
@@ -132,33 +170,73 @@ function mostrarPanel() {
     '<button class="boton boton-claro" id="botonSalir">Salir</button>';
   document.getElementById("botonSalir").addEventListener("click", salir);
 
-  // Armamos el menú: un botón por cada opción del rol
+  // Armamos el menú lateral: un botón por cada opción del rol
   menu.innerHTML = "";
-  const botonInicio = crearBotonMenu("Inicio");
-  menu.appendChild(botonInicio);
+  menu.appendChild(crearBotonMenu("Inicio"));
   for (const opcion of rol.opciones) {
     menu.appendChild(crearBotonMenu(opcion));
   }
 
-  // Al entrar, mostramos la bienvenida
-  botonInicio.click();
+  // Al entrar, empezamos en Inicio y sin historial
+  historial = [];
+  opcionActual = null;
+  irA("Inicio", false);
 }
 
 function crearBotonMenu(texto) {
   const boton = document.createElement("button");
   boton.textContent = texto;
-
+  boton.dataset.opcion = texto;
   boton.addEventListener("click", function () {
-    // Marcamos este botón como el activo y desmarcamos los demás
-    for (const b of menu.querySelectorAll("button")) {
-      b.classList.remove("activo");
-    }
-    boton.classList.add("activo");
-
-    abrirOpcion(texto);
+    irA(texto, true);
   });
-
   return boton;
+}
+
+// =====================================================================
+// 4b. MENÚ HAMBURGUESA Y BOTÓN ATRÁS
+// =====================================================================
+// "historial" guarda las pantallas por las que pasó el usuario,
+// como las migas de pan: Atrás saca la última y vuelve a ella.
+let historial = [];
+let opcionActual = null;
+
+function abrirMenu() {
+  menuLateral.classList.add("abierto");
+  fondoMenu.classList.remove("oculto");
+  botonMenu.setAttribute("aria-expanded", "true");
+  const activo = menu.querySelector(".activo") || menu.querySelector("button");
+  if (activo) activo.focus();
+}
+
+function cerrarMenu() {
+  menuLateral.classList.remove("abierto");
+  fondoMenu.classList.add("oculto");
+  botonMenu.setAttribute("aria-expanded", "false");
+}
+
+// Va a una pantalla. Si "guardar" es true, la actual queda en el historial.
+function irA(opcion, guardar) {
+  if (guardar && opcionActual && opcionActual !== opcion) {
+    historial.push(opcionActual);
+  }
+  opcionActual = opcion;
+
+  // Marcamos en el menú la opción activa
+  for (const b of menu.querySelectorAll("button")) {
+    b.classList.toggle("activo", b.dataset.opcion === opcion);
+  }
+  tituloSeccion.textContent = opcion;
+  botonAtras.classList.toggle("oculto", historial.length === 0);
+
+  cerrarMenu();
+  abrirOpcion(opcion);
+  window.scrollTo(0, 0);
+}
+
+function atras() {
+  const anterior = historial.pop();
+  if (anterior) irA(anterior, false);
 }
 
 // =====================================================================
@@ -207,13 +285,13 @@ function mostrarInicio() {
   const rol = ROLES[usuarioConectado.rol];
 
   let html = "<h2>Bienvenido(a), " + rol.nombre + "</h2>";
-  html += "<p>" + rol.descripcion + "</p>";
-  html += "<p>Esto es lo que puedes hacer en RUTA:</p>";
-  html += '<ul class="funciones">';
-  for (const opcion of rol.opciones) {
-    html += '<li class="rol-' + usuarioConectado.rol + '">' + opcion + "</li>";
+  html += '<p class="bienvenida">' + rol.bienvenida + "</p>";
+  html += '<ul class="lista-inicio">';
+  for (const frase of rol.puedeHacer) {
+    html += "<li>" + frase + "</li>";
   }
   html += "</ul>";
+  html += '<p class="ayuda-menu">Abre el menú <b>☰</b> para empezar.</p>';
 
   contenido.innerHTML = html;
 }
@@ -223,6 +301,15 @@ function mostrarInicio() {
 // =====================================================================
 // "submit" pasa al dar clic en Ingresar o al presionar Enter
 formIngreso.addEventListener("submit", ingresar);
+
+// Menú hamburguesa y botón Atrás
+botonMenu.addEventListener("click", abrirMenu);
+document.getElementById("cerrarMenu").addEventListener("click", cerrarMenu);
+fondoMenu.addEventListener("click", cerrarMenu);
+botonAtras.addEventListener("click", atras);
+document.addEventListener("keydown", function (evento) {
+  if (evento.key === "Escape") cerrarMenu();   // Esc cierra el menú
+});
 
 // Firebase nos avisa si hay alguien conectado (también al recargar la página)
 escucharSesion(function (usuario) {

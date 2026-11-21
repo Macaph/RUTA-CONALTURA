@@ -1,5 +1,5 @@
 /*
-  ESTILOS DEL RUTA
+  ESTILOS DE RUTA
   Aquí decimos CÓMO SE VE la página: colores, tamaños, espacios.
 
   Colores y letra de la marca Conaltura:
@@ -7,8 +7,7 @@
     - Letra redondeada: Comfortaa para títulos y Nunito para el texto
       (se cargan desde Google Fonts en index.html)
 
-  Truco: los colores de cada rol son los mismos de las notas
-  adhesivas de la cartelera, para que sea fácil de relacionar.
+  Toda la interfaz usa solo los colores de Conaltura.
 */
 
 /* ----- Variables: colores que usamos en toda la página ----- */
@@ -19,19 +18,12 @@
   --lima: #9cd818;            /* verde lima del logo */
   --verde: #78ba00;           /* verde de "naltura" */
   --verde-oscuro: #4e7d00;    /* verde para textos (se lee mejor) */
+  --lima-claro: #ecf7cf;      /* verde lima muy suave, para fondos */
 
   --fondo: #f4f7f2;
   --blanco: #ffffff;
   --texto: #2b2b2b;
   --gris: #6b7280;
-
-  /* Colores de la cartelera */
-  --vendedor: #ff6fa8;      /* rosado */
-  --bodeguista: #ffb347;    /* naranja */
-  --administrador: #ff9e9e; /* salmón */
-  --compras: #a8e05f;       /* verde */
-  --coordinador: #fff176;   /* amarillo */
-  --inventario: #29b6f6;    /* azul */
 }
 
 /* ----- Reglas generales ----- */
@@ -176,15 +168,42 @@ input:focus {
   color: var(--lima);
 }
 
-/* ----- Menú del rol ----- */
-.menu {
+/* ----- Barra de navegación: ☰ Menú, ← Atrás y nombre de la sección ----- */
+.barra-navegacion {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.menu button {
+/* Botón hamburguesa: tres rayitas hechas con <span> */
+.boton-hamburguesa {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: var(--petroleo);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.boton-hamburguesa span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lima);
+}
+
+.boton-hamburguesa:hover {
+  opacity: 0.9;
+}
+
+.boton-atras {
   background: var(--blanco);
   border: 2px solid var(--petroleo);
   color: var(--petroleo);
@@ -196,47 +215,111 @@ input:focus {
   font-weight: 700;
 }
 
-.menu button.activo {
-  background: var(--petroleo);
-  color: var(--lima);
-}
-
-.menu button:hover {
+.boton-atras:hover {
   background: var(--petroleo-claro);
 }
 
-.menu button.activo:hover {
-  background: var(--petroleo);
+.titulo-seccion {
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--petroleo);
 }
 
-/* ----- Etiqueta de color del rol (como una nota adhesiva) ----- */
+/* ----- Menú lateral (se desliza desde la izquierda) ----- */
+.menu-lateral {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 290px;
+  max-width: 85vw;
+  background: var(--petroleo);
+  box-shadow: 4px 0 18px rgba(0, 0, 0, 0.25);
+  transform: translateX(-100%);   /* escondido a la izquierda */
+  visibility: hidden;
+  transition: transform 0.25s ease, visibility 0.25s;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-lateral.abierto {
+  transform: translateX(0);       /* entra a la pantalla */
+  visibility: visible;
+}
+
+.menu-lateral-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 3px solid var(--lima);
+  color: var(--lima);
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.cerrar-menu {
+  background: transparent;
+  border: none;
+  color: var(--blanco);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* Fondo oscuro detrás del menú; al tocarlo se cierra */
+.fondo-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 78, 96, 0.35);
+  z-index: 15;
+}
+
+/* Opciones del menú, una debajo de otra */
+.menu {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.menu button {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--blanco);
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.menu button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.menu button.activo {
+  background: var(--lima);
+  color: var(--petroleo);
+}
+
+/* ----- Etiqueta del rol (arriba a la derecha y en Usuarios) ----- */
 .etiqueta-rol {
   padding: 4px 10px;
   border-radius: 4px;
-  color: #222;
   font-size: 13px;
   font-weight: bold;
+  background: var(--lima);
+  color: var(--petroleo);
 }
 
-.rol-vendedor      { background: var(--vendedor); }
-.rol-bodeguista    { background: var(--bodeguista); }
-.rol-administrador { background: var(--administrador); }
-.rol-compras       { background: var(--compras); }
-.rol-coordinador   { background: var(--coordinador); }
-
-/* ----- Lista de funciones del rol en la bienvenida ----- */
-.funciones {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  padding: 0;
-  list-style: none;
-}
-
-.funciones li {
-  padding: 14px;
-  border-radius: 6px;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.12);
+.ayuda-menu {
+  color: var(--gris);
 }
 
 /* =========================================================
@@ -256,8 +339,8 @@ h3 {
 }
 
 .bloque.peligro {
-  border-color: #f3b4b4;
-  background: #fff6f6;
+  border-color: var(--petroleo);
+  background: var(--petroleo-claro);
 }
 
 .fila-botones {
@@ -272,7 +355,9 @@ h3 {
 }
 
 .boton-peligro {
-  background: #c62828;
+  background: var(--blanco);
+  color: var(--petroleo);
+  border: 2px solid var(--petroleo);
 }
 
 /* El <label> que hace de botón para subir el Excel */
@@ -349,9 +434,9 @@ label.boton {
 }
 
 /* Colores del estado: verde, amarillo, rojo (como un semáforo) */
-.estado-bueno   { background: #c8e6c9; }
-.estado-regular { background: #fff3c4; }
-.estado-malo    { background: #ffcdd2; }
+.estado-bueno   { background: var(--lima-claro); }
+.estado-regular { background: var(--petroleo-claro); }
+.estado-malo    { background: var(--petroleo); color: var(--blanco); }
 
 .estado {
   padding: 2px 8px;
@@ -404,8 +489,8 @@ th {
 
 /* Mensaje informativo (por ejemplo, lo que puede subir el vendedor) */
 .aviso {
-  background: #fff8e1;
-  border-left: 4px solid var(--bodeguista);
+  background: var(--lima-claro);
+  border-left: 4px solid var(--lima);
   padding: 8px 12px;
   font-size: 14px;
 }
@@ -420,13 +505,15 @@ th {
   white-space: nowrap;
 }
 
-.aprobacion-pendiente { background: #e3f2fd; }
-.aprobacion-aprobado  { background: #c8e6c9; }
-.aprobacion-rechazado { background: #ffcdd2; }
+.aprobacion-pendiente { background: var(--petroleo-claro); }
+.aprobacion-aprobado  { background: var(--lima-claro); }
+.aprobacion-rechazado { background: var(--petroleo); color: var(--blanco); }
 
 .motivo {
   font-size: 12px;
-  color: #c62828;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--petroleo);
   margin-top: 4px;
 }
 
@@ -477,15 +564,15 @@ input[type="checkbox"] {
   white-space: nowrap;
 }
 
-.traslado-solicitado   { background: #e3f2fd; }
-.traslado-aprobado     { background: #c8e6c9; }
-.traslado-en-transito  { background: #ffe0b2; }
+.traslado-solicitado   { background: var(--petroleo-claro); }
+.traslado-aprobado     { background: var(--lima-claro); }
+.traslado-en-transito  { background: var(--petroleo-claro); border: 1px solid var(--petroleo); }
 .traslado-recibido     { background: var(--lima); color: var(--petroleo); }
-.traslado-rechazado    { background: #ffcdd2; }
+.traslado-rechazado    { background: var(--petroleo); color: var(--blanco); }
 
 .en-traslado {
   font-size: 12px;
-  color: #b45f00;
+  color: var(--petroleo);
   font-weight: 700;
   margin-top: 4px;
 }
@@ -528,11 +615,11 @@ input[type="checkbox"] {
   white-space: nowrap;
 }
 
-.compra-solicitada  { background: #e3f2fd; }
-.compra-aprobada    { background: #c8e6c9; }
+.compra-solicitada  { background: var(--petroleo-claro); }
+.compra-aprobada    { background: var(--lima-claro); }
 .compra-comprada    { background: var(--lima); color: var(--petroleo); }
-.compra-reutilizada { background: #d7f0a8; }
-.compra-rechazada   { background: #ffcdd2; }
+.compra-reutilizada { background: var(--lima-claro); }
+.compra-rechazada   { background: var(--petroleo); color: var(--blanco); }
 
 h4 {
   margin: 0 0 6px;
@@ -541,7 +628,7 @@ h4 {
 
 /* Caja verde que sugiere reutilizar */
 .reutilizar {
-  background: #f1f9e1;
+  background: var(--lima-claro);
   border-left: 4px solid var(--verde);
   padding: 10px 14px;
   border-radius: 6px;
@@ -733,4 +820,41 @@ body.en-ingreso::before {
   opacity: 0.10;                  /* 90 % transparente */
   pointer-events: none;           /* no estorba los clics */
   z-index: -1;                    /* queda detrás de todo */
+}
+
+/* =========================================================
+   PANTALLA DE INICIO: lo que puede hacer cada rol
+   ========================================================= */
+.bienvenida {
+  font-weight: 700;
+  color: var(--petroleo);
+  margin-bottom: 8px;
+}
+
+.lista-inicio {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.lista-inicio li {
+  position: relative;
+  padding: 6px 0 6px 28px;
+}
+
+/* Chulito verde lima antes de cada frase */
+.lista-inicio li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--lima);
+  color: var(--petroleo);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 20px;
 }

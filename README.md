@@ -86,7 +86,7 @@ Resuelve las partes del reto *"se pierden o se deterioran elementos sin que nadi
 - **Usuarios (Administrador):** tabla de qué puede hacer cada rol y cómo crear usuarios en la consola de Firebase.
 
 ## Diseño
-Usa los colores del logo de Conaltura: **azul petróleo `#124E60`** y **verde lima `#9CD818`**, con letras redondeadas parecidas a las de la marca (**Comfortaa** para títulos y **Nunito** para el texto, de Google Fonts). Los colores de cada rol son los de las notas adhesivas de la cartelera.
+Usa los colores del logo de Conaltura: **azul petróleo `#124E60`** y **verde lima `#9CD818`**, con letras redondeadas parecidas a las de la marca (**Comfortaa** para títulos y **Nunito** para el texto, de Google Fonts). Toda la interfaz usa solo los colores de Conaltura. La navegación es un menú tipo hamburguesa (☰) con botón **← Atrás**.
 
 ## Roles (según la cartelera)
 - **Vendedor:** sube el inventario de su sala o apartamento modelo, solicita elementos y reporta novedades.
