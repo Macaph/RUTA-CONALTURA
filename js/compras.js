@@ -19,7 +19,8 @@ import {
 } from "./datos.js";
 import {
   escapar, normalizar, mostrarCargando, aprobacionDe, opciones, fecha, pesos,
-  CATEGORIAS, ESTADOS, UBICACIONES
+  CATEGORIAS, ESTADOS, UBICACIONES, UBICACIONES_DISPONIBLES,
+  agrupacionPorNombre, responsableDe, disponibleParaReutilizar
 } from "./utilidades.js";
 import { codigosEnTraslado } from "./traslados.js";
 
@@ -87,14 +88,15 @@ function siguientesCodigos(cantidad) {
     if (n > mayor) mayor = n;
   }
   const lista = [];
-  for (let i = 1; i <= cantidad; i++) lista.push("RUTA-" + String(mayor + i).padStart(3, "0"));
+  for (let i = 1; i <= cantidad; i++) lista.push("EL-" + String(mayor + i).padStart(5, "0"));
   return lista;
 }
 
 // ♻️ EL CORAZÓN DE ESTE PASO:
 // busca en el inventario elementos parecidos a lo que quieren comprar.
-// Parecido = misma categoría, aprobado, que no esté en mal estado ni en
-// traslado. Primero los que coinciden en el nombre y los de la bodega.
+// Parecido = misma categoría y disponible para reutilizar (en bodega o en un
+// espacio en cierre, aprobado, no dañado, sin traslado; ver utilidades.js).
+// Primero los que coinciden en el nombre y los de la bodega.
 function buscarReutilizables(compra) {
   const ocupados = codigosEnTraslado(traslados);
   const palabras = normalizar(compra.nombre).split(/\s+/).filter(function (p) { return p.length >= 4; });
@@ -102,9 +104,7 @@ function buscarReutilizables(compra) {
   return inventario
     .filter(function (el) {
       return el.categoria === compra.categoria &&
-        aprobacionDe(el) === "Aprobado" &&
-        el.estado !== "Malo" &&
-        !ocupados.includes(el.codigo) &&
+        disponibleParaReutilizar(el, ocupados) &&
         el.ubicacion !== compra.destino;
     })
     .map(function (el) {
@@ -158,7 +158,7 @@ function formularioCompra() {
     '  <label>¿Qué se necesita? *<input id="compNombre" required maxlength="100" placeholder="Ej: Sofá 3 puestos"></label>' +
     '  <label>Categoría *<select id="compCategoria" required>' + opciones(CATEGORIAS, "Elige...") + "</select></label>" +
     '  <label>Cantidad *<input id="compCantidad" type="number" min="1" max="50" value="1" required></label>' +
-    '  <label>¿Para dónde? *<select id="compDestino" required>' + opciones(UBICACIONES, "Elige...") + "</select></label>" +
+    '  <label>¿Para dónde? *<select id="compDestino" required>' + opciones(UBICACIONES_DISPONIBLES, "Elige...") + "</select></label>" +
     '  <label class="ancho-completo">Motivo *<input id="compMotivo" required maxlength="300" placeholder="Ej: apertura de la sala del Proyecto 2"></label>' +
     '  <button type="submit" class="boton ancho-completo">📝 Enviar solicitud de compra</button>' +
     "</form></div>";
@@ -363,7 +363,7 @@ function seccionRegistrar() {
     html += '<form class="bloque formulario-grid form-registrar" data-id="' + escapar(c.id) + '">' +
       '<h4 class="ancho-completo">' + escapar(c.cantidad) + " × " + escapar(c.nombre) + " <small>(" + escapar(c.categoria) + ")</small></h4>" +
       '<label>Valor unitario (COP) *<input type="number" class="regValor" min="0" step="1000" required placeholder="Ej: 1500000"></label>' +
-      '<label>¿Dónde queda? *<select class="regUbicacion" required>' + opciones(UBICACIONES) + "</select></label>" +
+      '<label>¿Dónde queda? *<select class="regUbicacion" required>' + opciones(UBICACIONES_DISPONIBLES) + "</select></label>" +
       '<label>Estado *<select class="regEstado" required>' + opciones(ESTADOS) + "</select></label>" +
       '<button type="submit" class="boton ancho-completo">🛒 Registrar compra e ingresar al inventario</button>' +
       "</form>";
@@ -380,17 +380,29 @@ function activarRegistrar() {
       evento.preventDefault();
       const valor = parseInt(form.querySelector(".regValor").value, 10);
       const codigos = siguientesCodigos(compra.cantidad);
+      const agr = agrupacionPorNombre(form.querySelector(".regUbicacion").value);
+      const hoy = new Date();
+      const fechaHoy = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+      // Un elemento por cada unidad comprada, con todos los datos del kit
       const elementos = codigos.map(function (codigo) {
         return {
           codigo: codigo,
+          proyecto: agr.proyecto,
+          agrupacion: agr.id,
+          ubicacion: agr.nombre,
+          espacio: "",
           nombre: compra.nombre,
           categoria: compra.categoria,
-          ubicacion: form.querySelector(".regUbicacion").value,
+          cantidad: 1,
           estado: form.querySelector(".regEstado").value,
-          responsable: "Compras",
+          estadoGestion: agr.id === "AGR-BOD" ? "En bodega" : "Asignado",
+          valorUnitario: valor,
+          fechaCompra: fechaHoy,
+          proveedor: "",
+          reparaciones: 0,
+          responsable: responsableDe(agr.nombre),
           observaciones: "Compra nueva: " + compra.motivo.slice(0, 250),
           foto: "",
-          valorCompra: valor,
           aprobacion: "Pendiente",
           aprobadoPor: "",
           motivoRechazo: ""

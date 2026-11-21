@@ -39,7 +39,7 @@ body {
 }
 
 main {
-  max-width: 960px;
+  max-width: 1240px;
   margin: 24px auto;
   padding: 0 16px;
 }
@@ -436,7 +436,8 @@ label.boton {
 /* Colores del estado: verde, amarillo, rojo (como un semáforo) */
 .estado-bueno   { background: var(--lima-claro); }
 .estado-regular { background: var(--petroleo-claro); }
-.estado-malo    { background: var(--petroleo); color: var(--blanco); }
+.estado-danado  { background: var(--petroleo); color: var(--blanco); }
+.estado-n-a     { background: var(--blanco); border: 1px dashed var(--petroleo); }
 
 .estado {
   padding: 2px 8px;
@@ -787,16 +788,39 @@ code {
 }
 
 /* =========================================================
-   SLOGAN DE RUTA
+   LOGO Y SLOGAN DE RUTA (encabezado)
    ========================================================= */
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.encabezado h1.logo {
+  margin: 0;
+  line-height: 0;          /* sin espacio extra debajo de la imagen */
+}
+
+.logo img {
+  height: 64px;
+  width: auto;
+  display: block;
+}
+
 .encabezado .slogan {
-  font-family: "Nunito", "Segoe UI", sans-serif;
+  margin: 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--lima);
+  font-family: "Comfortaa", "Nunito", sans-serif;
   font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0;
   color: var(--blanco);
-  opacity: 0.9;
-  margin-left: 10px;
+  opacity: 0.95;
+}
+
+@media (max-width: 520px) {
+  .logo img { height: 48px; }
+  .encabezado .slogan { font-size: 13px; padding-left: 12px; }
 }
 
 .slogan-ingreso {
@@ -864,4 +888,59 @@ body.en-ingreso::before {
   line-height: 1.6;
   color: var(--texto);
   max-width: 640px;
+}
+
+/* =========================================================
+   MODELO DEL KIT: detalles, valores e informe de carga
+   ========================================================= */
+/* Texto pequeño debajo del nombre (espacio y observaciones) */
+.detalle {
+  font-size: 12px;
+  color: var(--gris);
+}
+
+/* Números alineados a la derecha (valores en pesos) */
+.derecha {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fila-total td {
+  background: var(--petroleo-claro);
+  font-weight: 700;
+}
+
+/* Informe después de cargar un Excel */
+.informe h4 {
+  margin: 16px 0 8px;
+}
+
+.informe details {
+  margin-top: 10px;
+  background: var(--fondo);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.informe summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--petroleo);
+}
+
+.informe table {
+  max-width: 520px;
+}
+
+/* Situación (estado de gestión) en una sola línea */
+.col-situacion {
+  white-space: nowrap;
+}
+
+/* Listas largas plegadas en los reportes */
+.plegable summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--petroleo);
+  padding: 8px 0;
 }

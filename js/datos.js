@@ -14,6 +14,7 @@
 */
 
 import { auth, db } from "./firebase-config.js";
+import { agrupacionPorNombre } from "./utilidades.js";
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -218,8 +219,13 @@ export async function avanzarTraslado(traslado, accion, rol, motivo) {
     // Si una falla, no se guarda ninguna.
     const lote = writeBatch(db);
     lote.update(ficha, { estado: "Recibido", recibidoPor: rol, recibidoEn: serverTimestamp() });
+    // El elemento queda en su nuevo lugar: ubicación, agrupación, proyecto y situación
+    const destino = agrupacionPorNombre(traslado.destino);
     lote.update(doc(db, COLECCION, traslado.codigoElemento), {
       ubicacion: traslado.destino,
+      agrupacion: destino.id,
+      proyecto: destino.proyecto,
+      estadoGestion: destino.id === "AGR-BOD" ? "En bodega" : "Asignado",
       ultimoTraslado: traslado.id
     });
     await lote.commit();

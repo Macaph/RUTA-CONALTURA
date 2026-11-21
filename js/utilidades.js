@@ -5,20 +5,70 @@
 */
 
 // =====================================================================
-// LISTAS FIJAS DEL RUTA (si se agrega una sala, se agrega aquí
-// y en firestore.rules)
+// LISTAS FIJAS DE RUTA (iguales a las del kit de datos de Conaltura).
+// Si se agrega una agrupación o categoría, se agrega aquí
+// y en firestore.rules.
 // =====================================================================
-export const CATEGORIAS = ["Mobiliario", "Decoración", "Electrodomésticos", "Tecnología", "Material publicitario", "Otro"];
-export const ESTADOS = ["Bueno", "Regular", "Malo"];
-export const UBICACIONES = [
-  "Bodega central",
-  "Sala de ventas - Proyecto 1",
-  "Apartamento modelo - Proyecto 1",
-  "Sala de ventas - Proyecto 2",
-  "Apartamento modelo - Proyecto 2"
+
+// Agrupaciones = los espacios donde están los elementos: salas de ventas,
+// apartamentos modelo (por tipología) y la bodega.
+// "nombre" es lo que se ve en pantalla; "id" es el código del kit.
+export const AGRUPACIONES = [
+  { id: "AGR-A-AM1", proyecto: "PRY-A", tipo: "Apartamento modelo", estado: "Activa",         nombre: "Proyecto A · Apartamento modelo T1" },
+  { id: "AGR-B-SV",  proyecto: "PRY-B", tipo: "Sala de ventas",     estado: "Activa",         nombre: "Proyecto B · Sala de ventas" },
+  { id: "AGR-B-AM1", proyecto: "PRY-B", tipo: "Apartamento modelo", estado: "Activa",         nombre: "Proyecto B · Apartamento modelo T1" },
+  { id: "AGR-B-AM2", proyecto: "PRY-B", tipo: "Apartamento modelo", estado: "Activa",         nombre: "Proyecto B · Apartamento modelo T2" },
+  { id: "AGR-C-SV",  proyecto: "PRY-C", tipo: "Sala de ventas",     estado: "En cierre",      nombre: "Proyecto C · Sala de ventas" },
+  { id: "AGR-C-AM1", proyecto: "PRY-C", tipo: "Apartamento modelo", estado: "En cierre",      nombre: "Proyecto C · Apartamento modelo T1" },
+  { id: "AGR-D-SV",  proyecto: "PRY-D", tipo: "Sala de ventas",     estado: "En montaje",     nombre: "Proyecto D · Sala de ventas" },
+  { id: "AGR-D-AM1", proyecto: "PRY-D", tipo: "Apartamento modelo", estado: "En montaje",     nombre: "Proyecto D · Apartamento modelo T1" },
+  { id: "AGR-D-AM2", proyecto: "PRY-D", tipo: "Apartamento modelo", estado: "Por configurar", nombre: "Proyecto D · Apartamento modelo T2" },
+  { id: "AGR-BOD",   proyecto: "BOD",   tipo: "Bodega",             estado: "Activa",         nombre: "Bodega central" }
 ];
-// El responsable es un rol o el encargado de la sala, no una persona con nombre
-export const RESPONSABLES = ["Coordinador de sala", "Bodeguista", "Administrador", "Compras", "Vendedor"];
+
+// Nombres de todas las ubicaciones (para filtros y reportes)
+export const UBICACIONES = AGRUPACIONES.map(function (a) { return a.nombre; });
+
+// Donde se puede registrar o enviar elementos: todo menos lo "Por configurar"
+export const UBICACIONES_DISPONIBLES = AGRUPACIONES
+  .filter(function (a) { return a.estado !== "Por configurar"; })
+  .map(function (a) { return a.nombre; });
+
+// Buscar una agrupación por su nombre o por su código
+export function agrupacionPorNombre(nombre) {
+  return AGRUPACIONES.find(function (a) { return a.nombre === nombre; }) || null;
+}
+export function agrupacionPorId(id) {
+  return AGRUPACIONES.find(function (a) { return a.id === id; }) || null;
+}
+
+export const CATEGORIAS = [
+  "Mobiliario", "Decoración", "Textiles", "Iluminación", "Menaje",
+  "Plantas y materas", "Electrodomésticos", "Tecnología", "Material comercial", "Utilería"
+];
+
+// Estado físico: cómo está el elemento ("N/A" = todavía no ha llegado)
+export const ESTADOS = ["Bueno", "Regular", "Dañado"];
+export const ESTADOS_CON_NA = ["Bueno", "Regular", "Dañado", "N/A"];
+
+// Estado de gestión: en qué situación está
+export const ESTADOS_GESTION = [
+  "Asignado", "En reparación", "En tránsito", "En bodega",
+  "En lista de saldos", "Pendiente de llegada", "De baja"
+];
+
+// El responsable es un rol, no una persona con nombre.
+// En salas y apartamentos responde el Vendedor (responsable del espacio);
+// en la bodega, el Bodeguista.
+export const RESPONSABLES = ["Vendedor", "Bodeguista", "Coordinador de sala", "Compras", "Administrador"];
+export function responsableDe(ubicacion) {
+  return ubicacion === "Bodega central" ? "Bodeguista" : "Vendedor";
+}
+
+// Convierte un texto en un nombre de clase CSS: "Dañado" -> "danado", "N/A" -> "n-a"
+export function claseDe(texto) {
+  return normalizar(texto).replace(/[^a-z0-9]+/g, "-");
+}
 
 // Fecha corta en formato colombiano: 18/11/26, 6:04 p. m.
 export function fecha(valor) {
@@ -79,4 +129,18 @@ export function etiquetaAprobacion(elemento) {
     html += '<div class="motivo">Motivo: ' + escapar(elemento.motivoRechazo) + "</div>";
   }
   return html;
+}
+
+// ¿Este elemento se puede reutilizar en otra sala? (caso de uso CU12 del kit)
+// Sí, si está aprobado, no está dañado, no está de baja / en reparación /
+// por llegar / en tránsito, no va en un traslado, y está en la bodega
+// o en un espacio que se está cerrando.
+export function disponibleParaReutilizar(el, codigosOcupados) {
+  const agr = agrupacionPorId(el.agrupacion) || agrupacionPorNombre(el.ubicacion);
+  const lugarLibre = el.ubicacion === "Bodega central" || (agr !== null && agr.estado === "En cierre");
+  const situacionLibre = !["De baja", "En reparación", "Pendiente de llegada", "En tránsito"].includes(el.estadoGestion);
+  return aprobacionDe(el) === "Aprobado" &&
+    el.estado !== "Dañado" && el.estado !== "N/A" &&
+    lugarLibre && situacionLibre &&
+    !codigosOcupados.includes(el.codigo);
 }

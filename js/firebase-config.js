@@ -12,17 +12,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
-import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-analytics.js";
 
 // Datos del proyecto (copiados de la consola de Firebase)
 const firebaseConfig = {
-  apiKey: "AIzaSyD7FFMeGbgvzcDbk-FF_vxOELEgpdamDZU",
-  authDomain: "sgimi-conaltura.firebaseapp.com",
-  projectId: "sgimi-conaltura",
-  storageBucket: "sgimi-conaltura.firebasestorage.app",
-  messagingSenderId: "472753144199",
-  appId: "1:472753144199:web:937316d2f40e87c44c1322",
-  measurementId: "G-GSPB9V13YW"
+  apiKey: "AIzaSyCnBEbfqcJMqPDnVo9NlIUyGvo4vHThi2M",
+  authDomain: "ruta-conaltura.firebaseapp.com",
+  projectId: "ruta-conaltura",
+  storageBucket: "ruta-conaltura.firebasestorage.app",
+  messagingSenderId: "176758700932",
+  appId: "1:176758700932:web:47898905555dda3b2b3bd1"
 };
 
 // Arrancamos Firebase
@@ -32,8 +30,3 @@ const app = initializeApp(firebaseConfig);
 // "export" permite que otros archivos los usen con "import"
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-// Analytics (cuenta las visitas). Si el navegador no lo soporta, no pasa nada.
-isSupported().then(function (soportado) {
-  if (soportado) getAnalytics(app);
-});

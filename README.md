@@ -14,10 +14,28 @@ La página usa **Firebase** (base de datos en la nube de Google), así que **no 
 
 Se necesita internet, porque los datos viven en Firebase y no en el computador. Así todos los roles ven la misma información desde cualquier equipo.
 
-## Demo rápida del inventario
-1. Entra como `bodeguista` (o `vendedor`) → **Registrar elementos** → **Cargar Excel** → elige `ejemplos/inventario_inicial_ejemplo.xlsx`.
-2. Mira el resultado: 18 agregados y 2 filas rechazadas (tienen errores a propósito).
-3. Ve a **Ver inventario**: filtra por ubicación o estado y dale **Descargar Excel**.
+## Carga del inventario del kit de Conaltura
+1. Entra como `administrador` → **Registrar elementos** → **Cargar Excel** → elige `ejemplos/inventario_kit_conaltura.xlsx` (la hoja *Inventario* del kit, 601 filas).
+2. RUTA revisa cada fila: **584 entran** y **17 se rechazan** con su motivo, y corrige automáticamente 45 nombres con mayúsculas o espacios de más.
+3. Ve a **Ver inventario** (filtros por ubicación, categoría, estado físico, situación y aprobación) o a **Reportes** (valor por proyecto y por agrupación).
+
+### Errores del kit que RUTA detecta al cargar
+| Error | Filas del kit |
+|---|---|
+| Código repetido (`EL-00164`, `EL-00192`, `EL-00472`) | 3 |
+| Agrupación que no existe (`AGR-B-AM3`) | 2 |
+| Proyecto que no coincide con la agrupación (`EL-00382`) | 1 |
+| Cantidad en cero (`EL-00161`) | 1 |
+| Valor unitario vacío | 9 |
+| Fecha de compra en el futuro (`EL-00456`, `EL-00472`) | 2 |
+| Nombres con mayúsculas o espacios de más (se corrigen solos) | 45 |
+
+Además, RUTA evita en el uso diario otros errores del kit: no deja trasladar sin escoger el código exacto del elemento (movimiento `M0091`), todo traslado queda registrado con quién lo pidió, aprobó, envió y recibió, y las reglas de Firebase no dejan guardar datos fuera de las listas permitidas.
+
+## Modelo de datos (igual al kit)
+- **Agrupaciones:** las 10 del kit (salas de ventas, apartamentos modelo por tipología y la bodega). `AGR-D-AM2` está *por configurar*, así que todavía no recibe elementos.
+- **Elemento:** código `EL-00000`, proyecto, agrupación, espacio, elemento, categoría (10), cantidad, estado físico (Bueno, Regular, Dañado, N/A), estado de gestión (Asignado, En reparación, En tránsito, En bodega, En lista de saldos, Pendiente de llegada, De baja), valor unitario, fecha de compra, proveedor, reparaciones y observaciones.
+- **Disponible para reutilizar:** aprobado, no dañado, sin traslado en curso y ubicado en la bodega o en un espacio *en cierre* (caso de uso CU12).
 
 ## Usuarios
 Hay una cuenta por rol. En la página se escribe solo el rol (`vendedor`); el sistema completa el correo (`vendedor@conaltura.com`).
@@ -56,7 +74,8 @@ Las contraseñas tampoco están en el código: las revisa Firebase Authenticatio
 | `js/firebase-config.js` | Los datos para conectarse a nuestro proyecto de Firebase | La dirección de la bodega |
 | `firestore.rules` | Reglas de seguridad (se pegan en la consola de Firebase) | El celador |
 | `js/lib/xlsx.full.min.js` | Librería SheetJS para leer y crear Excel (no se toca) | Una herramienta prestada |
-| `ejemplos/inventario_inicial_ejemplo.xlsx` | Excel de prueba con 20 elementos | |
+| `ejemplos/inventario_kit_conaltura.xlsx` | Inventario del kit de Conaltura (601 filas, con sus errores) | |
+| `img/logo-ruta.png` | Logo de RUTA | |
 
 Los datos se guardan en **Cloud Firestore** (Firebase), en la colección `inventario`. Cada elemento es un documento cuyo nombre es su código (ej: `RUTA-001`). No hay que programar un servidor (backend).
 
@@ -106,6 +125,7 @@ Resuelve una parte del reto: *"no hay un proceso formal para aprobar el inventar
 Lo que registra el **Administrador** queda aprobado de una. La idea es que **quien registra no se aprueba a sí mismo** (separación de funciones), y las reglas de Firebase lo hacen cumplir.
 
 ## Pendiente
-- [ ] Conectar RUTA a su **propio proyecto de Firebase**.
-- [ ] Logo de RUTA.
+- [x] RUTA con su propio proyecto de Firebase (`ruta-conaltura`).
+- [x] Logo de RUTA.
+- [x] Modelo de datos e inventario del kit de Conaltura.
 - [ ] Cambios del equipo.

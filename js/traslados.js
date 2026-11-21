@@ -15,7 +15,7 @@
 */
 
 import { leerInventario, leerTraslados, crearSolicitud, avanzarTraslado, mensajeDeError } from "./datos.js";
-import { escapar, normalizar, mostrarCargando, aprobacionDe, fecha, UBICACIONES } from "./utilidades.js";
+import { escapar, normalizar, mostrarCargando, aprobacionDe, fecha, UBICACIONES, UBICACIONES_DISPONIBLES } from "./utilidades.js";
 
 const ESTADOS_TRASLADO = ["Solicitado", "Aprobado", "En tránsito", "Recibido", "Rechazado"];
 const ICONOS = { "Solicitado": "📝", "Aprobado": "✅", "En tránsito": "🚚", "Recibido": "📦", "Rechazado": "❌" };
@@ -159,7 +159,9 @@ function formularioSolicitud() {
     .filter(function (t) { return ACTIVOS.includes(t.estado); })
     .map(function (t) { return t.codigoElemento; });
   const disponibles = inventario.filter(function (el) {
-    return aprobacionDe(el) === "Aprobado" && !ocupados.includes(el.codigo);
+    // Aprobado, sin traslado en curso, y que no esté de baja ni por llegar
+    return aprobacionDe(el) === "Aprobado" && !ocupados.includes(el.codigo) &&
+      !["De baja", "Pendiente de llegada"].includes(el.estadoGestion);
   });
 
   if (disponibles.length === 0) {
@@ -202,7 +204,7 @@ function activarFormulario() {
   selElemento.addEventListener("change", function () {
     const el = inventario.find(function (e) { return e.codigo === selElemento.value; });
     let html = '<option value="">Elige el destino...</option>';
-    for (const ubic of UBICACIONES) {
+    for (const ubic of UBICACIONES_DISPONIBLES) {
       if (el && ubic !== el.ubicacion) html += '<option value="' + escapar(ubic) + '">' + escapar(ubic) + "</option>";
     }
     selDestino.innerHTML = html;

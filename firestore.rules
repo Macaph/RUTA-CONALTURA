@@ -28,17 +28,44 @@ service cloud.firestore {
       return esDeConaltura() && rol() in roles;
     }
 
+    // Agrupaciones habilitadas (las mismas del kit; la "por configurar" no está):
+    // código -> [nombre que se ve, proyecto]
+    function agrupaciones() {
+      return {
+        'AGR-A-AM1': ['Proyecto A · Apartamento modelo T1', 'PRY-A'],
+        'AGR-B-SV': ['Proyecto B · Sala de ventas', 'PRY-B'],
+        'AGR-B-AM1': ['Proyecto B · Apartamento modelo T1', 'PRY-B'],
+        'AGR-B-AM2': ['Proyecto B · Apartamento modelo T2', 'PRY-B'],
+        'AGR-C-SV': ['Proyecto C · Sala de ventas', 'PRY-C'],
+        'AGR-C-AM1': ['Proyecto C · Apartamento modelo T1', 'PRY-C'],
+        'AGR-D-SV': ['Proyecto D · Sala de ventas', 'PRY-D'],
+        'AGR-D-AM1': ['Proyecto D · Apartamento modelo T1', 'PRY-D'],
+        'AGR-BOD': ['Bodega central', 'BOD']
+      };
+    }
+
     // Revisa que los datos del elemento estén completos y sean válidos
+    // (mismos campos y valores del kit de datos de Conaltura)
     function datosValidos(codigo) {
       let d = request.resource.data;
+      let agr = agrupaciones();
       return d.codigo == codigo
+        && codigo.matches('^EL-[0-9]{5}$')
         && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 100
-        && d.categoria in ['Mobiliario', 'Decoración', 'Electrodomésticos', 'Tecnología', 'Material publicitario', 'Otro']
-        && d.ubicacion in ['Bodega central', 'Sala de ventas - Proyecto 1', 'Apartamento modelo - Proyecto 1', 'Sala de ventas - Proyecto 2', 'Apartamento modelo - Proyecto 2']
-        && d.estado in ['Bueno', 'Regular', 'Malo']
-        && d.responsable in ['Coordinador de sala', 'Bodeguista', 'Administrador', 'Compras', 'Vendedor']
+        && d.categoria in ['Mobiliario', 'Decoración', 'Textiles', 'Iluminación', 'Menaje', 'Plantas y materas', 'Electrodomésticos', 'Tecnología', 'Material comercial', 'Utilería']
+        && d.agrupacion in agr.keys()
+        && agr[d.agrupacion][0] == d.ubicacion
+        && agr[d.agrupacion][1] == d.proyecto
+        && d.espacio is string && d.espacio.size() <= 60
+        && d.cantidad is int && d.cantidad >= 1 && d.cantidad <= 9999
+        && d.estado in ['Bueno', 'Regular', 'Dañado', 'N/A']
+        && d.estadoGestion in ['Asignado', 'En reparación', 'En tránsito', 'En bodega', 'En lista de saldos', 'Pendiente de llegada', 'De baja']
+        && d.valorUnitario is int && d.valorUnitario >= 0
+        && d.fechaCompra is string && d.fechaCompra.size() <= 10
+        && d.proveedor is string && d.proveedor.size() <= 100
+        && d.reparaciones is int && d.reparaciones >= 0
+        && d.responsable in ['Vendedor', 'Bodeguista', 'Coordinador de sala', 'Compras', 'Administrador']
         && (!('foto' in d) || (d.foto is string && d.foto.size() < 300000))
-        && (!('valorCompra' in d) || (d.valorCompra is int && d.valorCompra >= 0))
         && d.actualizadoPor == rol();
     }
 
@@ -79,13 +106,20 @@ service cloud.firestore {
     }
 
     // MOVIMIENTO por traslado (Bodeguista o Administrador):
-    // solo puede cambiar la ubicación, y solo hacia el destino de un
-    // traslado que en ese mismo momento queda "Recibido".
+    // solo puede cambiar el lugar del elemento (ubicación, agrupación,
+    // proyecto y situación), y solo hacia el destino de un traslado que
+    // en ese mismo momento queda "Recibido".
     function movimientoPorTraslado(codigo) {
       let d = request.resource.data;
+      let agr = agrupaciones();
       let traslado = getAfter(/databases/$(database)/documents/traslados/$(d.ultimoTraslado)).data;
       return tieneRol(['bodeguista', 'administrador'])
-        && d.diff(resource.data).affectedKeys().hasOnly(['ubicacion', 'ultimoTraslado'])
+        && d.diff(resource.data).affectedKeys()
+             .hasOnly(['ubicacion', 'agrupacion', 'proyecto', 'estadoGestion', 'ultimoTraslado'])
+        && d.agrupacion in agr.keys()
+        && agr[d.agrupacion][0] == d.ubicacion
+        && agr[d.agrupacion][1] == d.proyecto
+        && d.estadoGestion in ['Asignado', 'En bodega']
         && d.ultimoTraslado is string
         && traslado.estado == 'Recibido'
         && traslado.codigoElemento == codigo
@@ -93,7 +127,7 @@ service cloud.firestore {
     }
 
     function ubicacionValida(u) {
-      return u in ['Bodega central', 'Sala de ventas - Proyecto 1', 'Apartamento modelo - Proyecto 1', 'Sala de ventas - Proyecto 2', 'Apartamento modelo - Proyecto 2'];
+      return u in ['Proyecto A · Apartamento modelo T1', 'Proyecto B · Sala de ventas', 'Proyecto B · Apartamento modelo T1', 'Proyecto B · Apartamento modelo T2', 'Proyecto C · Sala de ventas', 'Proyecto C · Apartamento modelo T1', 'Proyecto D · Sala de ventas', 'Proyecto D · Apartamento modelo T1', 'Bodega central'];
     }
 
     // ---------- Colección "inventario" ----------
@@ -197,7 +231,7 @@ service cloud.firestore {
         && request.resource.data.solicitadoEn == request.time
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() <= 100
-        && request.resource.data.categoria in ['Mobiliario', 'Decoración', 'Electrodomésticos', 'Tecnología', 'Material publicitario', 'Otro']
+        && request.resource.data.categoria in ['Mobiliario', 'Decoración', 'Textiles', 'Iluminación', 'Menaje', 'Plantas y materas', 'Electrodomésticos', 'Tecnología', 'Material comercial', 'Utilería']
         && request.resource.data.cantidad is int
         && request.resource.data.cantidad >= 1 && request.resource.data.cantidad <= 50
         && ubicacionValida(request.resource.data.destino)

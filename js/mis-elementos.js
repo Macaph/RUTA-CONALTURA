@@ -6,7 +6,7 @@
 */
 
 import { leerInventario, leerTraslados, mensajeDeError } from "./datos.js";
-import { escapar, normalizar, mostrarCargando, etiquetaAprobacion, aprobacionDe, ESTADOS, UBICACIONES } from "./utilidades.js";
+import { escapar, claseDe, mostrarCargando, etiquetaAprobacion, aprobacionDe, ESTADOS, UBICACIONES, pesos } from "./utilidades.js";
 import { codigosEnTraslado } from "./traslados.js";
 
 // Qué valor de "Responsable" corresponde a cada rol
@@ -51,7 +51,7 @@ export async function mostrarMisElementos(contenido, usuario, alReportar) {
   html += '<div class="resumen"><div class="cuadro">Total<br><b>' + mios.length + "</b></div>";
   for (const est of ESTADOS) {
     const n = mios.filter(function (el) { return el.estado === est; }).length;
-    html += '<div class="cuadro estado-' + normalizar(est) + '">' + est + "<br><b>" + n + "</b></div>";
+    html += '<div class="cuadro estado-' + claseDe(est) + '">' + est + "<br><b>" + n + "</b></div>";
   }
   const pendientes = mios.filter(function (el) { return aprobacionDe(el) === "Pendiente"; }).length;
   html += '<div class="cuadro aprobacion-pendiente">⏳ Pendientes<br><b>' + pendientes + "</b></div></div>";
@@ -87,7 +87,7 @@ export async function mostrarMisElementos(contenido, usuario, alReportar) {
         '<td class="col-codigo">' + escapar(el.codigo) + "</td>" +
         "<td>" + escapar(el.nombre) + "</td>" +
         "<td>" + escapar(el.categoria) + "</td>" +
-        '<td><span class="estado estado-' + normalizar(el.estado) + '">' + escapar(el.estado) + "</span></td>" +
+        '<td><span class="estado estado-' + claseDe(el.estado) + '">' + escapar(el.estado) + "</span></td>" +
         "<td>" + etiquetaAprobacion(el) + "</td>" +
         "<td>" + accion + "</td>" +
         "</tr>";
