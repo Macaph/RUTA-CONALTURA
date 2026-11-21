@@ -718,3 +718,19 @@ code {
   font-weight: 700;
   color: var(--verde-oscuro);
 }
+
+/* =========================================================
+   MARCA DE AGUA EN LA PANTALLA DE INGRESO
+   La imagen cubre todo el fondo con 10% de opacidad
+   (90% transparente). Solo se ve mientras body tiene
+   la clase "en-ingreso".
+   ========================================================= */
+body.en-ingreso::before {
+  content: "";
+  position: fixed;
+  inset: 0;                       /* ocupa toda la pantalla */
+  background: url("../img/fondo-ingreso.jpg") center / cover no-repeat;
+  opacity: 0.10;                  /* 90 % transparente */
+  pointer-events: none;           /* no estorba los clics */
+  z-index: -1;                    /* queda detrás de todo */
+}

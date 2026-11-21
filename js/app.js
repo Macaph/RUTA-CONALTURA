@@ -108,6 +108,7 @@ async function salir() {
 // 4. MOSTRAR LA PANTALLA CORRECTA SEGÚN LA SESIÓN
 // =====================================================================
 function mostrarIngreso() {
+  document.body.classList.add("en-ingreso");     // imagen de fondo visible
   pantallaCargando.classList.add("oculto");
   pantallaPanel.classList.add("oculto");
   cajaUsuario.classList.add("oculto");
@@ -116,6 +117,7 @@ function mostrarIngreso() {
 
 function mostrarPanel() {
   const rol = ROLES[usuarioConectado.rol];
+  document.body.classList.remove("en-ingreso");  // sin imagen de fondo adentro
 
   // Escondemos el ingreso y mostramos el panel
   pantallaCargando.classList.add("oculto");
