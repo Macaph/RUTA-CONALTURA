@@ -104,10 +104,7 @@ Resuelve una parte del reto: *"no hay un proceso formal para aprobar el inventar
 
 Lo que registra el **Administrador** queda aprobado de una. La idea es que **quien registra no se aprueba a sí mismo** (separación de funciones), y las reglas de Firebase lo hacen cumplir.
 
-## Origen
-RUTA parte de una copia del proyecto **SGIMI** (mismo reto de Conaltura), que el equipo toma como base para hacerle sus propios cambios.
-
 ## Pendiente
-- [ ] Conectar RUTA a su **propio proyecto de Firebase** (hoy `js/firebase-config.js` todavía apunta al de SGIMI).
+- [ ] Conectar RUTA a su **propio proyecto de Firebase**.
 - [ ] Logo de RUTA.
 - [ ] Cambios del equipo.
