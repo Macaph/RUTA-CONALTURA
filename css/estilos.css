@@ -858,3 +858,10 @@ body.en-ingreso::before {
   text-align: center;
   line-height: 20px;
 }
+
+.parrafo-inicio {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--texto);
+  max-width: 640px;
+}

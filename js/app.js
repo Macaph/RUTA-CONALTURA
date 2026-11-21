@@ -32,14 +32,8 @@ const ROLES = {
   vendedor: {
     nombre: "Vendedor",
     descripcion: "Usa la sala de ventas con los clientes y sube el inventario de su sala.",
-    // Lo que se muestra en la pantalla de Inicio
-    bienvenida: "Desde tu sala de ventas o apartamento modelo puedes:",
-    puedeHacer: [
-      "Registrar el inventario de tu sala, a mano o cargando un Excel.",
-      "Consultar qué elementos hay, en qué estado están y por dónde han pasado.",
-      "Pedir elementos de otra sala o de la bodega.",
-      "Reportar si algo se daña o se pierde, y pedir su reposición."
-    ],
+    // Lo que se muestra en la pantalla de Inicio (en párrafo)
+    parrafo: "Consulta, registra y reporta las novedades con los elementos de la sala de ventas y apartamento modelo.",
     opciones: ["Ver inventario", "Registrar elementos", "Solicitar elementos", "Reportar novedad"]
   },
   bodeguista: {
@@ -285,12 +279,18 @@ function mostrarInicio() {
   const rol = ROLES[usuarioConectado.rol];
 
   let html = "<h2>Bienvenido(a), " + rol.nombre + "</h2>";
-  html += '<p class="bienvenida">' + rol.bienvenida + "</p>";
-  html += '<ul class="lista-inicio">';
-  for (const frase of rol.puedeHacer) {
-    html += "<li>" + frase + "</li>";
+  if (rol.parrafo) {
+    // Si el rol tiene un párrafo, se muestra como texto corrido
+    html += '<p class="parrafo-inicio">' + rol.parrafo + "</p>";
+  } else {
+    // Si no, la lista de lo que puede hacer
+    html += '<p class="bienvenida">' + rol.bienvenida + "</p>";
+    html += '<ul class="lista-inicio">';
+    for (const frase of rol.puedeHacer) {
+      html += "<li>" + frase + "</li>";
+    }
+    html += "</ul>";
   }
-  html += "</ul>";
   html += '<p class="ayuda-menu">Abre el menú <b>☰</b> para empezar.</p>';
 
   contenido.innerHTML = html;
