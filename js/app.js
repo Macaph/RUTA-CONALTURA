@@ -20,7 +20,8 @@ import {
   mostrarInformeTraslados,
   mostrarTrasladosAdmin
 } from "./traslados.js";
-import { mostrarNovedad, mostrarRevisarCompras, mostrarRegistrarCompra, mostrarComprasAdmin } from "./compras.js";
+import { mostrarNovedad, mostrarRevisarCompras, mostrarRegistrarCompra, mostrarComprasAdmin, preseleccionarNovedad } from "./compras.js";
+import { mostrarMisElementos } from "./mis-elementos.js";
 import { mostrarReportes, mostrarUsuarios } from "./reportes.js";
 
 // =====================================================================
@@ -34,7 +35,7 @@ const ROLES = {
     descripcion: "Usa la sala de ventas con los clientes y sube el inventario de su sala.",
     // Lo que se muestra en la pantalla de Inicio (en párrafo)
     parrafo: "Consulta, registra y reporta las novedades con los elementos de la sala de ventas y apartamento modelo.",
-    opciones: ["Ver inventario", "Registrar elementos", "Solicitar elementos", "Reportar novedad"]
+    opciones: ["Ver inventario", "Registrar elementos", "Solicitar elementos", "Reportar novedad", "Mis elementos asignados"]
   },
   bodeguista: {
     nombre: "Bodeguista",
@@ -255,6 +256,12 @@ function abrirOpcion(opcion) {
     mostrarInformeTraslados(contenido, usuarioConectado);
   } else if (opcion === "Traslados") {
     mostrarTrasladosAdmin(contenido, usuarioConectado);
+  } else if (opcion === "Mis elementos asignados") {
+    // El botón "Reportar" de cada elemento abre Reportar novedad con ese elemento
+    mostrarMisElementos(contenido, usuarioConectado, function (codigo) {
+      preseleccionarNovedad(codigo);
+      irA("Reportar novedad", true);
+    });                                                       // js/mis-elementos.js
   } else if (opcion === "Reportar novedad") {
     mostrarNovedad(contenido, usuarioConectado);             // los 4 están en js/compras.js
   } else if (opcion === "Revisar solicitudes de compra") {

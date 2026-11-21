@@ -50,6 +50,7 @@ Las contraseñas tampoco están en el código: las revisa Firebase Authenticatio
 | `js/traslados.js` | Solicitudes, envíos, recibos e historial | El camión de mudanzas |
 | `js/compras.js` | Novedades, solicitudes de compra y reutilización | La oficina de compras |
 | `js/reportes.js` | Reportes, gráficas y tabla de permisos | El tablero de control |
+| `js/mis-elementos.js` | Elementos de los que es responsable el Vendedor | Mi cajón |
 | `js/utilidades.js` | Funciones pequeñas que usan varios archivos | La caja de herramientas |
 | `js/datos.js` | El único archivo que habla con la base de datos | El mensajero |
 | `js/firebase-config.js` | Los datos para conectarse a nuestro proyecto de Firebase | La dirección de la bodega |
@@ -89,7 +90,7 @@ Resuelve las partes del reto *"se pierden o se deterioran elementos sin que nadi
 Usa los colores del logo de Conaltura: **azul petróleo `#124E60`** y **verde lima `#9CD818`**, con letras redondeadas parecidas a las de la marca (**Comfortaa** para títulos y **Nunito** para el texto, de Google Fonts). Toda la interfaz usa solo los colores de Conaltura. La navegación es un menú tipo hamburguesa (☰) con botón **← Atrás**.
 
 ## Roles (según la cartelera)
-- **Vendedor:** sube el inventario de su sala o apartamento modelo, solicita elementos y reporta novedades.
+- **Vendedor:** sube el inventario de su sala o apartamento modelo, solicita elementos, reporta novedades y consulta **sus elementos asignados**.
 - **Bodeguista:** gestiona la bodega, envía, recibe e informa traslados.
 - **Administrador:** acceso completo y control, reportes y usuarios.
 - **Compras:** compra, revisa, solicita y hace reportes.

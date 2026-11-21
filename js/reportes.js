@@ -200,6 +200,7 @@ const PERMISOS = [
   ["Registrar elementos (a mano o con Excel)",    "Salas", true, true,  "Compras nuevas", false],
   ["Aprobar o rechazar el inventario",            false, false, true,  false, true],
   ["Reportar novedades",                          true,  false, false, false, false],
+  ["Ver sus elementos asignados",                 true,  false, false, false, false],
   ["Solicitar traslados",                         true,  false, true,  false, false],
   ["Aprobar o rechazar traslados",                false, false, false, false, true],
   ["Enviar y recibir traslados",                  false, true,  true,  false, false],

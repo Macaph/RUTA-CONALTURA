@@ -32,6 +32,13 @@ let traslados = [];
 let compras = [];
 let pantallaActual = null;
 
+// Si llegan desde "Mis elementos asignados", aquí queda el código
+// del elemento para dejarlo escogido en el formulario de novedad.
+let codigoPreseleccionado = "";
+export function preseleccionarNovedad(codigo) {
+  codigoPreseleccionado = codigo;
+}
+
 // =====================================================================
 // 1. AYUDANTES
 // =====================================================================
@@ -219,6 +226,16 @@ export const mostrarNovedad = pantalla(function () {
     tablaCompras(mias, "Aún no has pedido compras.");
 
   activarFormularioCompra();
+
+  // Si vienen de "Mis elementos asignados", dejamos el elemento ya escogido
+  if (codigoPreseleccionado) {
+    const lista = document.getElementById("novElemento");
+    if (lista.querySelector('option[value="' + codigoPreseleccionado + '"]')) {
+      lista.value = codigoPreseleccionado;
+      document.getElementById("novEstado").focus();
+    }
+    codigoPreseleccionado = "";
+  }
 
   document.getElementById("formNovedad").addEventListener("submit", async function (evento) {
     evento.preventDefault();
