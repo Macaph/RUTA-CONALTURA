@@ -1,0 +1,720 @@
+/*
+  ESTILOS DEL RUTA
+  Aquí decimos CÓMO SE VE la página: colores, tamaños, espacios.
+
+  Colores y letra de la marca Conaltura:
+    - Azul petróleo #124E60 y verde lima #9CD818 (del logo)
+    - Letra redondeada: Comfortaa para títulos y Nunito para el texto
+      (se cargan desde Google Fonts en index.html)
+
+  Truco: los colores de cada rol son los mismos de las notas
+  adhesivas de la cartelera, para que sea fácil de relacionar.
+*/
+
+/* ----- Variables: colores que usamos en toda la página ----- */
+:root {
+  /* Colores de Conaltura */
+  --petroleo: #124e60;        /* azul petróleo del logo */
+  --petroleo-claro: #e6eff1;
+  --lima: #9cd818;            /* verde lima del logo */
+  --verde: #78ba00;           /* verde de "naltura" */
+  --verde-oscuro: #4e7d00;    /* verde para textos (se lee mejor) */
+
+  --fondo: #f4f7f2;
+  --blanco: #ffffff;
+  --texto: #2b2b2b;
+  --gris: #6b7280;
+
+  /* Colores de la cartelera */
+  --vendedor: #ff6fa8;      /* rosado */
+  --bodeguista: #ffb347;    /* naranja */
+  --administrador: #ff9e9e; /* salmón */
+  --compras: #a8e05f;       /* verde */
+  --coordinador: #fff176;   /* amarillo */
+  --inventario: #29b6f6;    /* azul */
+}
+
+/* ----- Reglas generales ----- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Nunito", "Segoe UI", Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+main {
+  max-width: 960px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* Clase para esconder cosas (JavaScript la pone o la quita) */
+.oculto {
+  display: none !important;
+}
+
+/* ----- Encabezado ----- */
+.encabezado {
+  background: var(--petroleo);
+  color: var(--blanco);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.encabezado {
+  border-bottom: 5px solid var(--lima);
+}
+
+.encabezado h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: 2px;
+  color: var(--lima);
+}
+
+/* Títulos con la letra redondeada de la marca */
+h1,
+h2,
+h3 {
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  color: var(--petroleo);
+}
+
+.encabezado p {
+  margin: 4px 0 0;
+  opacity: 0.85;
+}
+
+.usuario-actual {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ----- Tarjeta: caja blanca donde va el contenido ----- */
+.tarjeta {
+  background: var(--blanco);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ----- Pantalla de ingreso ----- */
+.ingreso {
+  max-width: 420px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ingreso h2 {
+  margin: 0;
+}
+
+.subtitulo {
+  color: var(--gris);
+  margin-top: 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error {
+  color: #c62828;
+  margin: 0;
+  font-size: 14px;
+}
+
+select,
+input {
+  padding: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  border: 1px solid #c9d3d6;
+  border-radius: 8px;
+}
+
+/* Borde verde lima al escribir en un campo */
+select:focus,
+input:focus {
+  outline: 2px solid var(--lima);
+  border-color: var(--petroleo);
+}
+
+/* ----- Botones ----- */
+.boton {
+  background: var(--petroleo);
+  color: var(--blanco);
+  border: none;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  border-radius: 24px;
+  cursor: pointer;
+}
+
+.boton:hover {
+  opacity: 0.9;
+}
+
+.boton-claro {
+  background: transparent;
+  border: 2px solid var(--lima);
+  color: var(--lima);
+}
+
+/* ----- Menú del rol ----- */
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.menu button {
+  background: var(--blanco);
+  border: 2px solid var(--petroleo);
+  color: var(--petroleo);
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.menu button.activo {
+  background: var(--petroleo);
+  color: var(--lima);
+}
+
+.menu button:hover {
+  background: var(--petroleo-claro);
+}
+
+.menu button.activo:hover {
+  background: var(--petroleo);
+}
+
+/* ----- Etiqueta de color del rol (como una nota adhesiva) ----- */
+.etiqueta-rol {
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: #222;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.rol-vendedor      { background: var(--vendedor); }
+.rol-bodeguista    { background: var(--bodeguista); }
+.rol-administrador { background: var(--administrador); }
+.rol-compras       { background: var(--compras); }
+.rol-coordinador   { background: var(--coordinador); }
+
+/* ----- Lista de funciones del rol en la bienvenida ----- */
+.funciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.funciones li {
+  padding: 14px;
+  border-radius: 6px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================================
+   PASO 2: INVENTARIO
+   ========================================================= */
+
+h3 {
+  margin-top: 0;
+}
+
+/* Cajas que separan las secciones de una pantalla */
+.bloque {
+  border: 1px solid #e3e6eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.bloque.peligro {
+  border-color: #f3b4b4;
+  background: #fff6f6;
+}
+
+.fila-botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.boton-secundario {
+  background: var(--lima);
+  color: var(--petroleo);
+}
+
+.boton-peligro {
+  background: #c62828;
+}
+
+/* El <label> que hace de botón para subir el Excel */
+label.boton {
+  display: inline-block;
+}
+
+/* Formulario en 2 columnas (en celular queda en 1) */
+.formulario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.formulario-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.ancho-completo {
+  grid-column: 1 / -1;
+}
+
+.exito {
+  color: var(--verde-oscuro);
+  font-weight: bold;
+}
+
+.lista-errores {
+  color: #c62828;
+  font-size: 14px;
+}
+
+.vacio {
+  color: var(--gris);
+  text-align: center;
+  padding: 24px;
+}
+
+/* Filtros encima de la tabla */
+.filtros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.filtros input {
+  flex: 1;
+  min-width: 180px;
+}
+
+/* Cuadritos del resumen (Total, Bueno, Regular, Malo) */
+.resumen {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.cuadro {
+  background: var(--petroleo-claro);
+  border-radius: 6px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: 90px;
+  font-size: 14px;
+}
+
+.cuadro b {
+  font-size: 22px;
+}
+
+/* Colores del estado: verde, amarillo, rojo (como un semáforo) */
+.estado-bueno   { background: #c8e6c9; }
+.estado-regular { background: #fff3c4; }
+.estado-malo    { background: #ffcdd2; }
+
+.estado {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* Tabla */
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid #e3e6eb;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background: var(--petroleo);
+  color: var(--blanco);
+  position: sticky;
+  top: 0;
+}
+
+.miniatura {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.sin-foto {
+  color: var(--gris);
+  font-size: 12px;
+}
+
+/* Que el código (RUTA-001) no se parta en dos líneas */
+.col-codigo {
+  white-space: nowrap;
+}
+
+/* Mensaje informativo (por ejemplo, lo que puede subir el vendedor) */
+.aviso {
+  background: #fff8e1;
+  border-left: 4px solid var(--bodeguista);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* =========================================================
+   APROBACIÓN DEL INVENTARIO
+   ========================================================= */
+.aprobacion {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.aprobacion-pendiente { background: #e3f2fd; }
+.aprobacion-aprobado  { background: #c8e6c9; }
+.aprobacion-rechazado { background: #ffcdd2; }
+
+.motivo {
+  font-size: 12px;
+  color: #c62828;
+  margin-top: 4px;
+}
+
+.boton-aprobar {
+  background: var(--verde-oscuro);
+}
+
+.boton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* =========================================================
+   PIE DE PÁGINA
+   ========================================================= */
+.pie {
+  text-align: center;
+  color: var(--gris);
+  font-size: 13px;
+  padding: 24px 16px 32px;
+}
+
+/* =========================================================
+   PASO 3: TRASLADOS
+   ========================================================= */
+.boton-mini {
+  white-space: nowrap;
+  padding: 5px 10px;
+  font-size: 12px;
+  margin: 2px;
+}
+
+.celda-acciones {
+  white-space: nowrap;
+}
+
+/* Estado del traslado */
+.traslado {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.traslado-solicitado   { background: #e3f2fd; }
+.traslado-aprobado     { background: #c8e6c9; }
+.traslado-en-transito  { background: #ffe0b2; }
+.traslado-recibido     { background: var(--lima); color: var(--petroleo); }
+.traslado-rechazado    { background: #ffcdd2; }
+
+.en-traslado {
+  font-size: 12px;
+  color: #b45f00;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* Panel de historial */
+.historial {
+  position: relative;
+  background: var(--petroleo-claro);
+  border-color: var(--petroleo);
+}
+
+.cerrar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--petroleo);
+}
+
+.linea-tiempo {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.linea-tiempo li {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   PASO 4: COMPRAS
+   ========================================================= */
+.compra {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.compra-solicitada  { background: #e3f2fd; }
+.compra-aprobada    { background: #c8e6c9; }
+.compra-comprada    { background: var(--lima); color: var(--petroleo); }
+.compra-reutilizada { background: #d7f0a8; }
+.compra-rechazada   { background: #ffcdd2; }
+
+h4 {
+  margin: 0 0 6px;
+  color: var(--petroleo);
+}
+
+/* Caja verde que sugiere reutilizar */
+.reutilizar {
+  background: #f1f9e1;
+  border-left: 4px solid var(--verde);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 8px 0 12px;
+}
+
+.reutilizar ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.reutilizar li {
+  margin-bottom: 6px;
+}
+
+.sin-sugerencias {
+  color: var(--gris);
+  font-size: 14px;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =========================================================
+   PASO 4: REPORTES
+   ========================================================= */
+.fila-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Indicadores grandes */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.indicador {
+  background: var(--petroleo-claro);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.indicador b {
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  font-size: 28px;
+  color: var(--petroleo);
+}
+
+.indicador span {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.indicador small {
+  color: var(--gris);
+  font-size: 12px;
+}
+
+/* Gráficas de barras (solo HTML + CSS) */
+.graficas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.grafica {
+  margin: 0;
+  border: 1px solid #e3e6eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.grafica figcaption {
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  font-weight: 700;
+  color: var(--petroleo);
+  margin-bottom: 12px;
+}
+
+.barra-fila {
+  display: grid;
+  grid-template-columns: 150px 1fr 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.barra-fila:hover {
+  background: var(--petroleo-claro);
+}
+
+.barra-pista {
+  height: 14px;
+}
+
+.barra {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--petroleo);
+  border-radius: 0 4px 4px 0;
+}
+
+.barra-valor {
+  font-weight: 700;
+  text-align: right;
+}
+
+/* =========================================================
+   PASO 4: USUARIOS
+   ========================================================= */
+.centro {
+  text-align: center;
+}
+
+.matriz td small {
+  display: block;
+  font-size: 11px;
+  color: var(--gris);
+}
+
+.si {
+  color: var(--verde-oscuro);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.no {
+  color: #b0b8bb;
+}
+
+code {
+  background: var(--petroleo-claro);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Espacio arriba de los títulos de sección dentro del contenido */
+#contenido > h3 {
+  margin-top: 28px;
+}
+
+/* =========================================================
+   SLOGAN DE RUTA
+   ========================================================= */
+.encabezado .slogan {
+  font-family: "Nunito", "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--blanco);
+  opacity: 0.9;
+  margin-left: 10px;
+}
+
+.slogan-ingreso {
+  margin: -4px 0 0;
+  font-family: "Comfortaa", "Nunito", sans-serif;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}

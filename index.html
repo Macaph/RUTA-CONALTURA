@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+  RUTA - Registro Unificado de Traslados y Activos
+  Reto Conaltura (EstudIA)
+
+  Este archivo es el "esqueleto" de la página: aquí solo va la ESTRUCTURA.
+  - Los colores y el diseño están en css/estilos.css
+  - La lógica (lo que pasa al hacer clic) está en js/app.js
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUTA | Conaltura</title>
+  <!-- Letras redondeadas parecidas a las de la marca Conaltura (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+  <!-- ===== ENCABEZADO: siempre visible ===== -->
+  <header class="encabezado">
+    <div>
+      <h1>RUTA <span class="slogan">Cada elemento con su ruta.</span></h1>
+      <p>Registro Unificado de Traslados y Activos · Conaltura</p>
+    </div>
+    <!-- Aquí aparece quién está conectado (lo llena app.js) -->
+    <div id="usuarioActual" class="usuario-actual oculto"></div>
+  </header>
+
+  <main>
+
+    <!-- ===== PANTALLA 0: CARGANDO (mientras Firebase revisa si hay sesión) ===== -->
+    <section id="pantallaCargando" class="tarjeta ingreso">
+      <p class="vacio">⏳ Conectando con RUTA...</p>
+    </section>
+
+    <!-- ===== PANTALLA 1: INGRESO ===== -->
+    <section id="pantallaIngreso" class="tarjeta ingreso oculto">
+      <h2>Bienvenido a RUTA</h2>
+      <p class="slogan-ingreso">Cada elemento con su ruta.</p>
+      <p class="subtitulo">
+        Organiza, prioriza y gestiona el inventario de las salas de ventas,
+        apartamentos modelo y bodegas.
+      </p>
+
+      <!-- Usamos un formulario para que también se pueda ingresar con Enter -->
+      <form id="formIngreso" class="formulario">
+        <label for="campoUsuario">Usuario</label>
+        <input type="text" id="campoUsuario" placeholder="Ej: vendedor" autocomplete="username" required>
+
+        <label for="campoContrasena">Contraseña</label>
+        <input type="password" id="campoContrasena" placeholder="Tu contraseña" autocomplete="current-password" required>
+
+        <!-- Aquí sale el mensaje si el usuario o la contraseña están mal -->
+        <p id="mensajeError" class="error oculto">Usuario o contraseña incorrectos.</p>
+
+        <button type="submit" id="botonIngresar" class="boton">Ingresar</button>
+      </form>
+    </section>
+
+    <!-- ===== PANTALLA 2: PANEL PRINCIPAL (oculto hasta ingresar) ===== -->
+    <section id="pantallaPanel" class="oculto">
+
+      <!-- Menú con las opciones del rol (lo arma app.js) -->
+      <nav id="menu" class="menu"></nav>
+
+      <!-- Aquí se muestra el contenido de la opción elegida -->
+      <div id="contenido" class="tarjeta"></div>
+
+    </section>
+
+  </main>
+
+  <footer class="pie">
+    Prototipo académico · Reto EstudIA para Conaltura · Hecho con HTML, CSS, JavaScript y Firebase
+  </footer>
+
+  <!-- JavaScript:
+       1) La librería para leer y crear archivos de Excel (SheetJS).
+       2) app.js, que arranca todo. Es type="module" porque usa "import"
+          para traer los otros archivos:
+            app.js -> inventario.js -> datos.js -> firebase-config.js
+          OJO: por ser módulo, la página NO abre con doble clic.
+          Hay que abrirla con Live Server (VS Code) o desde GitHub Pages. -->
+  <script src="js/lib/xlsx.full.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
