@@ -35,6 +35,7 @@ const DOMINIO = "@conaltura.com";
 const COLECCION = "inventario";
 const TRASLADOS = "traslados";
 const COMPRAS = "compras";
+const MOVIMIENTOS_ACTIVOS = "movimientos_activos";
 
 // Firebase devuelve las fechas en un formato propio (Timestamp).
 // Esto las convierte en fechas normales de JavaScript.
@@ -143,7 +144,7 @@ export async function decidirAprobacion(codigos, decision, motivo, rolQueDecide)
     const lote = writeBatch(db);
     for (const codigo of codigos.slice(inicio, inicio + 400)) {
       lote.update(doc(db, COLECCION, codigo), {
-        aprobacion: decision,                       // "Aprobado" o "Rechazado"
+        aprobacion: decision,
         aprobadoPor: rolQueDecide,
         aprobadoEn: serverTimestamp(),
         motivoRechazo: decision === "Rechazado" ? motivo : ""
@@ -153,10 +154,10 @@ export async function decidirAprobacion(codigos, decision, motivo, rolQueDecide)
   }
 }
 
-// Borra todo el inventario, traslados y compras (solo el Administrador)
+// Borra todo el inventario, traslados, compras y movimientos (solo Administrador)
 export async function vaciarInventario() {
   const fichas = [];
-  for (const nombre of [COLECCION, TRASLADOS, COMPRAS]) {
+  for (const nombre of [COLECCION, TRASLADOS, COMPRAS, MOVIMIENTOS_ACTIVOS]) {
     const resultado = await getDocs(collection(db, nombre));
     resultado.forEach(function (documento) { fichas.push(documento.ref); });
   }
@@ -180,7 +181,6 @@ export async function leerTraslados() {
   const resultado = await getDocs(collection(db, TRASLADOS));
   const lista = [];
   resultado.forEach(function (documento) {
-    // El id lo crea Firebase; lo guardamos para poder actualizar la ficha
     lista.push(Object.assign({ id: documento.id }, convertirFechas(documento.data())));
   });
   lista.sort(function (a, b) { return (b.solicitadoEn || 0) - (a.solicitadoEn || 0); });
@@ -201,25 +201,37 @@ export async function crearSolicitud(solicitud, rolQueSolicita) {
   });
 }
 
-// Mueve el traslado al siguiente estado según la acción:
-//   "aprobar" / "rechazar"  -> solo el Coordinador
-//   "enviar" / "recibir"    -> Bodeguista (o Administrador)
+// Mueve el traslado al siguiente estado según la acción.
 export async function avanzarTraslado(traslado, accion, rol, motivo) {
   const ficha = doc(db, TRASLADOS, traslado.id);
 
   if (accion === "aprobar") {
-    await updateDoc(ficha, { estado: "Aprobado", aprobadoPor: rol, aprobadoEn: serverTimestamp(), motivoRechazo: "" });
+    await updateDoc(ficha, {
+      estado: "Aprobado",
+      aprobadoPor: rol,
+      aprobadoEn: serverTimestamp(),
+      motivoRechazo: ""
+    });
   } else if (accion === "rechazar") {
-    await updateDoc(ficha, { estado: "Rechazado", aprobadoPor: rol, aprobadoEn: serverTimestamp(), motivoRechazo: motivo });
+    await updateDoc(ficha, {
+      estado: "Rechazado",
+      aprobadoPor: rol,
+      aprobadoEn: serverTimestamp(),
+      motivoRechazo: motivo
+    });
   } else if (accion === "enviar") {
-    await updateDoc(ficha, { estado: "En tránsito", enviadoPor: rol, enviadoEn: serverTimestamp() });
+    await updateDoc(ficha, {
+      estado: "En tránsito",
+      enviadoPor: rol,
+      enviadoEn: serverTimestamp()
+    });
   } else if (accion === "recibir") {
-    // Al recibir pasan DOS cosas al mismo tiempo (en un lote):
-    // el traslado queda "Recibido" y el elemento cambia de ubicación.
-    // Si una falla, no se guarda ninguna.
     const lote = writeBatch(db);
-    lote.update(ficha, { estado: "Recibido", recibidoPor: rol, recibidoEn: serverTimestamp() });
-    // El elemento queda en su nuevo lugar: ubicación, agrupación, proyecto y situación
+    lote.update(ficha, {
+      estado: "Recibido",
+      recibidoPor: rol,
+      recibidoEn: serverTimestamp()
+    });
     const destino = agrupacionPorNombre(traslado.destino);
     lote.update(doc(db, COLECCION, traslado.codigoElemento), {
       ubicacion: traslado.destino,
@@ -235,9 +247,9 @@ export async function avanzarTraslado(traslado, accion, rol, motivo) {
 // =====================================================================
 // COMPRAS (solicitar, revisar y registrar)
 // =====================================================================
-// Estados:  Solicitada -> Aprobada -> Comprada
-//                      -> Reutilizada (había uno igual: no se compra)
-//                      -> Rechazada
+// Estados: Solicitada -> Aprobada -> Comprada
+//                     -> Reutilizada
+//                     -> Rechazada
 
 export async function leerCompras() {
   const resultado = await getDocs(collection(db, COMPRAS));
@@ -292,4 +304,46 @@ export async function registrarCompra(compra, elementosNuevos, valorUnitario, ro
     codigosCreados: elementosNuevos.map(function (el) { return el.codigo; })
   });
   await lote.commit();
+}
+
+// =====================================================================
+// MOVIMIENTOS DE ACTIVOS
+// =====================================================================
+// Conserva la trazabilidad administrativa del activo sin borrar el
+// historial cuando pasa a saldos, se actualiza o se da de baja.
+
+export async function leerMovimientosActivos() {
+  const resultado = await getDocs(collection(db, MOVIMIENTOS_ACTIVOS));
+  const lista = [];
+
+  resultado.forEach(function (documento) {
+    lista.push(Object.assign(
+      { id: documento.id },
+      convertirFechas(documento.data())
+    ));
+  });
+
+  lista.sort(function (a, b) {
+    return (b.creadoEn || 0) - (a.creadoEn || 0);
+  });
+
+  return lista;
+}
+
+export async function registrarMovimientoActivo(movimiento, rolQueRegistra) {
+  if (!movimiento || !movimiento.codigoActivo || !movimiento.tipo) {
+    throw new Error("El movimiento requiere código de activo y tipo.");
+  }
+
+  await addDoc(collection(db, MOVIMIENTOS_ACTIVOS), {
+    codigoActivo: movimiento.codigoActivo,
+    nombreActivo: movimiento.nombreActivo || "",
+    tipo: movimiento.tipo,
+    estadoAnterior: movimiento.estadoAnterior || "",
+    estadoNuevo: movimiento.estadoNuevo || "",
+    motivo: movimiento.motivo || "",
+    observaciones: movimiento.observaciones || "",
+    creadoPor: rolQueRegistra,
+    creadoEn: serverTimestamp()
+  });
 }

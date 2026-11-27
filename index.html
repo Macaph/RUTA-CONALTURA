@@ -2,44 +2,54 @@
 <!--
   RUTA - Registro Unificado de Traslados y Activos
   Reto Conaltura (EstudIA)
-
   Este archivo es el "esqueleto" de la página: aquí solo va la ESTRUCTURA.
-  - Los colores y el diseño están en css/estilos.css
-  - La lógica (lo que pasa al hacer clic) está en js/app.js
+  - Los estilos generales están en css/estilos.css
+  - Los estilos del módulo de activos están en css/activos-adquisiciones.css
+  - La lógica principal está en js/app.js
 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RUTA | Conaltura</title>
-  <!-- Letras redondeadas parecidas a las de la marca Conaltura (Google Fonts) -->
+
+  <!-- Letras redondeadas parecidas a las de la marca Conaltura. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilos.css">
-</head>
-<!-- La clase "en-ingreso" muestra la imagen de fondo (marca de agua).
-     app.js la quita al entrar y la vuelve a poner al salir. -->
-<body class="en-ingreso">
 
-  <!-- ===== ENCABEZADO: siempre visible ===== -->
+  <!-- Primero se cargan los estilos generales y después los del nuevo módulo. -->
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/activos-adquisiciones.css">
+</head>
+
+<!-- La clase "en-ingreso" muestra la imagen de fondo.
+     app.js la quita al entrar y la vuelve a colocar al salir. -->
+<body class="en-ingreso">
+  <!-- ===== ENCABEZADO: SIEMPRE VISIBLE ===== -->
   <header class="encabezado">
     <div class="marca">
-      <!-- Logo de RUTA (ya trae "Registro Unificado de Traslados y Activos") -->
       <h1 class="logo">
-        <img src="img/logo-ruta.png" alt="RUTA · Registro Unificado de Traslados y Activos" width="137" height="64">
+        <img
+          src="img/logo-ruta.png"
+          alt="RUTA · Registro Unificado de Traslados y Activos"
+          width="137"
+          height="64"
+        >
       </h1>
       <p class="slogan">Cada elemento con su ruta.</p>
     </div>
-    <!-- Aquí aparece quién está conectado (lo llena app.js) -->
+
+    <!-- app.js muestra aquí el rol conectado y el botón Salir. -->
     <div id="usuarioActual" class="usuario-actual oculto"></div>
   </header>
 
   <main>
-
-    <!-- ===== PANTALLA 0: CARGANDO (mientras Firebase revisa si hay sesión) ===== -->
+    <!-- ===== PANTALLA 0: CARGANDO ===== -->
     <section id="pantallaCargando" class="tarjeta ingreso">
-      <p class="vacio">⏳ Conectando con RUTA...</p>
+      <p class="vacio" role="status" aria-live="polite">
+        ⏳ Conectando con RUTA...
+      </p>
     </section>
 
     <!-- ===== PANTALLA 1: INGRESO ===== -->
@@ -51,64 +61,95 @@
         apartamentos modelo y bodegas.
       </p>
 
-      <!-- Usamos un formulario para que también se pueda ingresar con Enter -->
+      <!-- El formulario permite ingresar con el botón o con la tecla Enter. -->
       <form id="formIngreso" class="formulario">
         <label for="campoUsuario">Usuario</label>
-        <input type="text" id="campoUsuario" placeholder="Ej: vendedor" autocomplete="username" required>
+        <input
+          type="text"
+          id="campoUsuario"
+          placeholder="Ej: vendedor"
+          autocomplete="username"
+          required
+        >
 
         <label for="campoContrasena">Contraseña</label>
-        <input type="password" id="campoContrasena" placeholder="Tu contraseña" autocomplete="current-password" required>
+        <input
+          type="password"
+          id="campoContrasena"
+          placeholder="Tu contraseña"
+          autocomplete="current-password"
+          required
+        >
 
-        <!-- Aquí sale el mensaje si el usuario o la contraseña están mal -->
-        <p id="mensajeError" class="error oculto">Usuario o contraseña incorrectos.</p>
+        <p id="mensajeError" class="error oculto" role="alert" aria-live="assertive">
+          Usuario o contraseña incorrectos.
+        </p>
 
-        <button type="submit" id="botonIngresar" class="boton">Ingresar</button>
+        <button type="submit" id="botonIngresar" class="boton">
+          Ingresar
+        </button>
       </form>
     </section>
 
-    <!-- ===== PANTALLA 2: PANEL PRINCIPAL (oculto hasta ingresar) ===== -->
+    <!-- ===== PANTALLA 2: PANEL PRINCIPAL ===== -->
     <section id="pantallaPanel" class="oculto">
-
-      <!-- Menú con las opciones del rol (lo arma app.js) -->
-      <!-- Barra de navegación: botón de menú (☰), botón Atrás y nombre de la sección -->
+      <!-- Barra de navegación: menú, botón Atrás y sección actual. -->
       <div class="barra-navegacion">
-        <button id="botonMenu" class="boton-hamburguesa" aria-label="Abrir menú"
-                aria-expanded="false" aria-controls="menuLateral">
-          <span></span><span></span><span></span>
+        <button
+          type="button"
+          id="botonMenu"
+          class="boton-hamburguesa"
+          aria-label="Abrir menú"
+          aria-expanded="false"
+          aria-controls="menuLateral"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
-        <button id="botonAtras" class="boton-atras oculto">← Atrás</button>
+
+        <button type="button" id="botonAtras" class="boton-atras oculto">
+          ← Atrás
+        </button>
+
         <span id="tituloSeccion" class="titulo-seccion">Inicio</span>
       </div>
 
-      <!-- Menú lateral (se abre con ☰). El fondo oscuro lo cierra al tocarlo. -->
+      <!-- El fondo oscuro permite cerrar el menú lateral. -->
       <div id="fondoMenu" class="fondo-menu oculto"></div>
+
       <nav id="menuLateral" class="menu-lateral" aria-label="Menú principal">
         <div class="menu-lateral-encabezado">
           <span>Menú</span>
-          <button id="cerrarMenu" class="cerrar-menu" aria-label="Cerrar menú">✕</button>
+          <button
+            type="button"
+            id="cerrarMenu"
+            class="cerrar-menu"
+            aria-label="Cerrar menú"
+          >
+            ✕
+          </button>
         </div>
-        <!-- Las opciones las crea app.js según el rol -->
+
+        <!-- app.js crea las opciones según el rol autenticado. -->
         <div id="menu" class="menu"></div>
       </nav>
 
-      <!-- Aquí se muestra el contenido de la opción elegida -->
-      <div id="contenido" class="tarjeta"></div>
-
+      <!-- Todos los módulos cargan su interfaz dentro de este contenedor. -->
+      <div id="contenido" class="tarjeta" aria-live="polite"></div>
     </section>
-
   </main>
 
   <footer class="pie">
     Prototipo académico · Reto EstudIA.
   </footer>
 
-  <!-- JavaScript:
-       1) La librería para leer y crear archivos de Excel (SheetJS).
-       2) app.js, que arranca todo. Es type="module" porque usa "import"
-          para traer los otros archivos:
-            app.js -> inventario.js -> datos.js -> firebase-config.js
-          OJO: por ser módulo, la página NO abre con doble clic.
-          Hay que abrirla con Live Server (VS Code) o desde GitHub Pages. -->
+  <!--
+    1. SheetJS permite importar y exportar archivos de Excel.
+    2. app.js inicia la aplicación y carga el resto de módulos.
+    Por ser módulos JavaScript, la aplicación debe ejecutarse desde un
+    servidor local o desde GitHub Pages, no abriendo el HTML con doble clic.
+  -->
   <script src="js/lib/xlsx.full.min.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>

@@ -1,25 +1,21 @@
 rules_version = '2';
 
 // =====================================================================
-// REGLAS DE SEGURIDAD DEL RUTA
-// Se copian y pegan en: Firebase > Firestore Database > pestaña "Reglas"
-//
-// Estas reglas se revisan en los servidores de Google, NO en la página.
-// Aunque alguien modifique el JavaScript, no puede saltárselas.
+// REGLAS DE SEGURIDAD DE RUTA
+// Firebase Console > Firestore Database > Reglas
 // =====================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- Ayudantes ----------
-
-    // ¿Inició sesión con un correo de Conaltura? (ej: vendedor@conaltura.com)
+    // -----------------------------------------------------------------
+    // AYUDANTES GENERALES
+    // -----------------------------------------------------------------
     function esDeConaltura() {
       return request.auth != null
         && request.auth.token.email is string
         && request.auth.token.email.matches('^[a-z]+@conaltura[.]com$');
     }
 
-    // El rol es lo que va antes de la @
     function rol() {
       return request.auth.token.email.split('@')[0];
     }
@@ -28,8 +24,6 @@ service cloud.firestore {
       return esDeConaltura() && rol() in roles;
     }
 
-    // Agrupaciones habilitadas (las mismas del kit; la "por configurar" no está):
-    // código -> [nombre que se ve, proyecto]
     function agrupaciones() {
       return {
         'AGR-A-AM1': ['Proyecto A · Apartamento modelo T1', 'PRY-A'],
@@ -44,78 +38,152 @@ service cloud.firestore {
       };
     }
 
-    // Revisa que los datos del elemento estén completos y sean válidos
-    // (mismos campos y valores del kit de datos de Conaltura)
+    function ubicacionValida(u) {
+      return u in [
+        'Proyecto A · Apartamento modelo T1',
+        'Proyecto B · Sala de ventas',
+        'Proyecto B · Apartamento modelo T1',
+        'Proyecto B · Apartamento modelo T2',
+        'Proyecto C · Sala de ventas',
+        'Proyecto C · Apartamento modelo T1',
+        'Proyecto D · Sala de ventas',
+        'Proyecto D · Apartamento modelo T1',
+        'Bodega central'
+      ];
+    }
+
+    function categoriaValida(categoria) {
+      return categoria in [
+        'Mobiliario',
+        'Decoración',
+        'Textiles',
+        'Iluminación',
+        'Menaje',
+        'Plantas y materas',
+        'Electrodomésticos',
+        'Tecnología',
+        'Material comercial',
+        'Utilería'
+      ];
+    }
+
+    function estadoFisicoValido(estado) {
+      return estado in ['Bueno', 'Regular', 'Dañado', 'N/A'];
+    }
+
+    function estadoGestionValido(estado) {
+      return estado in [
+        'Asignado',
+        'En reparación',
+        'En tránsito',
+        'En bodega',
+        'En lista de saldos',
+        'Pendiente de llegada',
+        'De baja'
+      ];
+    }
+
+    // -----------------------------------------------------------------
+    // VALIDACIONES DEL INVENTARIO
+    // -----------------------------------------------------------------
     function datosValidos(codigo) {
       let d = request.resource.data;
       let agr = agrupaciones();
+
       return d.codigo == codigo
         && codigo.matches('^EL-[0-9]{5}$')
-        && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 100
-        && d.categoria in ['Mobiliario', 'Decoración', 'Textiles', 'Iluminación', 'Menaje', 'Plantas y materas', 'Electrodomésticos', 'Tecnología', 'Material comercial', 'Utilería']
+        && d.nombre is string
+        && d.nombre.size() > 0
+        && d.nombre.size() <= 100
+        && categoriaValida(d.categoria)
         && d.agrupacion in agr.keys()
         && agr[d.agrupacion][0] == d.ubicacion
         && agr[d.agrupacion][1] == d.proyecto
-        && d.espacio is string && d.espacio.size() <= 60
-        && d.cantidad is int && d.cantidad >= 1 && d.cantidad <= 9999
-        && d.estado in ['Bueno', 'Regular', 'Dañado', 'N/A']
-        && d.estadoGestion in ['Asignado', 'En reparación', 'En tránsito', 'En bodega', 'En lista de saldos', 'Pendiente de llegada', 'De baja']
-        && d.valorUnitario is int && d.valorUnitario >= 0
-        && d.fechaCompra is string && d.fechaCompra.size() <= 10
-        && d.proveedor is string && d.proveedor.size() <= 100
-        && d.reparaciones is int && d.reparaciones >= 0
-        && d.responsable in ['Vendedor', 'Bodeguista', 'Coordinador de sala', 'Compras', 'Administrador']
+        && d.espacio is string
+        && d.espacio.size() <= 60
+        && d.cantidad is int
+        && d.cantidad >= 1
+        && d.cantidad <= 9999
+        && estadoFisicoValido(d.estado)
+        && estadoGestionValido(d.estadoGestion)
+        && d.valorUnitario is int
+        && d.valorUnitario >= 0
+        && d.fechaCompra is string
+        && d.fechaCompra.size() <= 10
+        && d.proveedor is string
+        && d.proveedor.size() <= 100
+        && d.reparaciones is int
+        && d.reparaciones >= 0
+        && d.responsable in [
+          'Vendedor',
+          'Bodeguista',
+          'Coordinador de sala',
+          'Compras',
+          'Administrador'
+        ]
         && (!('foto' in d) || (d.foto is string && d.foto.size() < 300000))
-        && d.actualizadoPor == rol();
+        && d.actualizadoPor == rol()
+        && d.actualizadoEn == request.time;
     }
 
-    // APROBACIÓN al registrar:
-    // - El Administrador registra ya aprobado.
-    // - El Vendedor, el Bodeguista y Compras registran como Pendiente
-    //   (quien registra no se aprueba a sí mismo).
     function aprobacionAlRegistrar() {
       let d = request.resource.data;
-      return (tieneRol(['administrador'])
-              && d.aprobacion == 'Aprobado' && d.aprobadoPor == 'administrador' && d.motivoRechazo == '')
-          || (tieneRol(['vendedor', 'bodeguista', 'compras'])
-              && d.aprobacion == 'Pendiente' && d.aprobadoPor == '' && d.motivoRechazo == '');
+
+      return (
+          tieneRol(['administrador'])
+          && d.aprobacion == 'Aprobado'
+          && d.aprobadoPor == 'administrador'
+          && d.motivoRechazo == ''
+        ) || (
+          tieneRol(['vendedor', 'bodeguista', 'compras'])
+          && d.aprobacion == 'Pendiente'
+          && d.aprobadoPor == ''
+          && d.motivoRechazo == ''
+        );
     }
 
-    // ¿Quién puede registrar en esa ubicación?
-    // Administrador y Bodeguista: en cualquiera.
-    // Compras: solo crea (cuando registra una compra), en cualquiera.
-    // Vendedor: solo en salas y apartamentos modelo (no en la bodega).
     function puedeRegistrarAhi() {
       return tieneRol(['administrador', 'bodeguista'])
         || (tieneRol(['compras']) && resource == null)
-        || (tieneRol(['vendedor']) && request.resource.data.ubicacion != 'Bodega central');
+        || (
+          tieneRol(['vendedor'])
+          && request.resource.data.ubicacion != 'Bodega central'
+        );
     }
 
-    // DECISIÓN de aprobación (Coordinador o Administrador):
-    // solo puede cambiar los datos de aprobación, nada más del elemento.
     function decisionValida() {
       let d = request.resource.data;
+
       return tieneRol(['coordinador', 'administrador'])
-        && d.diff(resource.data).affectedKeys()
-             .hasOnly(['aprobacion', 'aprobadoPor', 'aprobadoEn', 'motivoRechazo'])
+        && d.diff(resource.data).affectedKeys().hasOnly([
+          'aprobacion',
+          'aprobadoPor',
+          'aprobadoEn',
+          'motivoRechazo'
+        ])
         && d.aprobacion in ['Aprobado', 'Rechazado']
         && d.aprobadoPor == rol()
         && d.aprobadoEn == request.time
-        && d.motivoRechazo is string && d.motivoRechazo.size() <= 200
+        && d.motivoRechazo is string
+        && d.motivoRechazo.size() <= 200
         && (d.aprobacion == 'Aprobado' || d.motivoRechazo.size() > 0);
     }
 
-    // MOVIMIENTO por traslado (Bodeguista o Administrador):
-    // solo puede cambiar el lugar del elemento (ubicación, agrupación,
-    // proyecto y situación), y solo hacia el destino de un traslado que
-    // en ese mismo momento queda "Recibido".
     function movimientoPorTraslado(codigo) {
       let d = request.resource.data;
       let agr = agrupaciones();
-      let traslado = getAfter(/databases/$(database)/documents/traslados/$(d.ultimoTraslado)).data;
+      let traslado = getAfter(
+        /databases/$(database)/documents/traslados/$(d.ultimoTraslado)
+      ).data;
+
       return tieneRol(['bodeguista', 'administrador'])
-        && d.diff(resource.data).affectedKeys()
-             .hasOnly(['ubicacion', 'agrupacion', 'proyecto', 'estadoGestion', 'ultimoTraslado'])
+        && d.diff(resource.data).affectedKeys().hasOnly([
+          'ubicacion',
+          'agrupacion',
+          'proyecto',
+          'estadoGestion',
+          'ultimoTraslado'
+        ])
         && d.agrupacion in agr.keys()
         && agr[d.agrupacion][0] == d.ubicacion
         && agr[d.agrupacion][1] == d.proyecto
@@ -126,142 +194,304 @@ service cloud.firestore {
         && traslado.destino == d.ubicacion;
     }
 
-    function ubicacionValida(u) {
-      return u in ['Proyecto A · Apartamento modelo T1', 'Proyecto B · Sala de ventas', 'Proyecto B · Apartamento modelo T1', 'Proyecto B · Apartamento modelo T2', 'Proyecto C · Sala de ventas', 'Proyecto C · Apartamento modelo T1', 'Proyecto D · Sala de ventas', 'Proyecto D · Apartamento modelo T1', 'Bodega central'];
+    // Permite al rol unificado Compras/Administración y Finanzas editar
+    // únicamente datos básicos o la disposición del activo.
+    function administracionActivoValida(codigo) {
+      let d = request.resource.data;
+      let cambios = d.diff(resource.data).affectedKeys();
+
+      return tieneRol(['compras', 'administrador'])
+        && d.codigo == codigo
+        && datosValidos(codigo)
+        && cambios.hasOnly([
+          'nombre',
+          'estado',
+          'responsable',
+          'observaciones',
+          'estadoGestion',
+          'fechaDisposicion',
+          'motivoDisposicion',
+          'observacionesDisposicion',
+          'actualizadoPor',
+          'actualizadoEn'
+        ])
+        && (!cambios.hasAny(['nombre'])
+            || (d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 100))
+        && (!cambios.hasAny(['estado']) || estadoFisicoValido(d.estado))
+        && (!cambios.hasAny(['estadoGestion'])
+            || d.estadoGestion in ['En lista de saldos', 'De baja'])
+        && (!cambios.hasAny(['fechaDisposicion'])
+            || (d.fechaDisposicion is string && d.fechaDisposicion.size() == 10))
+        && (!cambios.hasAny(['motivoDisposicion'])
+            || (d.motivoDisposicion is string
+                && d.motivoDisposicion.size() > 0
+                && d.motivoDisposicion.size() <= 100))
+        && (!cambios.hasAny(['observacionesDisposicion'])
+            || (d.observacionesDisposicion is string
+                && d.observacionesDisposicion.size() <= 300));
     }
 
-    // ---------- Colección "inventario" ----------
+    // -----------------------------------------------------------------
+    // COLECCIÓN INVENTARIO
+    // -----------------------------------------------------------------
     match /inventario/{codigo} {
+      allow read: if tieneRol([
+        'vendedor',
+        'bodeguista',
+        'administrador',
+        'compras',
+        'coordinador'
+      ]);
 
-      // Todos los roles pueden VER el inventario
-      allow read: if tieneRol(['vendedor', 'bodeguista', 'administrador', 'compras', 'coordinador']);
+      allow create: if datosValidos(codigo)
+        && aprobacionAlRegistrar()
+        && puedeRegistrarAhi();
 
-      // CREAR un elemento
-      allow create: if datosValidos(codigo) && aprobacionAlRegistrar() && puedeRegistrarAhi();
+      allow update: if (
+          datosValidos(codigo)
+          && aprobacionAlRegistrar()
+          && puedeRegistrarAhi()
+          && !(tieneRol(['vendedor'])
+               && resource.data.ubicacion == 'Bodega central')
+        )
+        || decisionValida()
+        || movimientoPorTraslado(codigo)
+        || administracionActivoValida(codigo);
 
-      // MODIFICAR: o es un nuevo registro (vuelve a quedar pendiente),
-      //            o es la decisión del Coordinador / Administrador.
-      // El Vendedor tampoco puede tocar algo que hoy esté en la bodega.
-      allow update: if (datosValidos(codigo) && aprobacionAlRegistrar() && puedeRegistrarAhi()
-                        && !(tieneRol(['vendedor']) && resource.data.ubicacion == 'Bodega central'))
-                    || decisionValida()
-                    || movimientoPorTraslado(codigo);
-
-      // BORRAR: solo el Administrador
       allow delete: if tieneRol(['administrador']);
     }
 
-    // ---------- Colección "traslados" ----------
-    // Estados: Solicitado -> Aprobado -> En tránsito -> Recibido
-    //                     -> Rechazado
+    // -----------------------------------------------------------------
+    // COLECCIÓN TRASLADOS
+    // -----------------------------------------------------------------
     match /traslados/{id} {
+      allow read: if tieneRol([
+        'vendedor',
+        'bodeguista',
+        'administrador',
+        'compras',
+        'coordinador'
+      ]);
 
-      // Todos los roles pueden ver los traslados (historial)
-      allow read: if tieneRol(['vendedor', 'bodeguista', 'administrador', 'compras', 'coordinador']);
-
-      // SOLICITAR (Vendedor o Administrador): el elemento debe existir,
-      // estar aprobado, y el origen debe ser donde está hoy.
       allow create: if tieneRol(['vendedor', 'administrador'])
-        && request.resource.data.keys().hasOnly(['codigoElemento', 'nombreElemento', 'origen', 'destino',
-                                                 'motivo', 'estado', 'solicitadoPor', 'solicitadoEn'])
+        && request.resource.data.keys().hasOnly([
+          'codigoElemento',
+          'nombreElemento',
+          'origen',
+          'destino',
+          'motivo',
+          'estado',
+          'solicitadoPor',
+          'solicitadoEn'
+        ])
         && request.resource.data.estado == 'Solicitado'
         && request.resource.data.solicitadoPor == rol()
         && request.resource.data.solicitadoEn == request.time
         && request.resource.data.motivo is string
-        && request.resource.data.motivo.size() > 0 && request.resource.data.motivo.size() <= 200
+        && request.resource.data.motivo.size() > 0
+        && request.resource.data.motivo.size() <= 200
         && ubicacionValida(request.resource.data.destino)
         && request.resource.data.destino != request.resource.data.origen
-        && exists(/databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento))
-        && get(/databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento)).data.ubicacion
-             == request.resource.data.origen
-        && get(/databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento)).data.aprobacion
-             == 'Aprobado';
+        && exists(
+          /databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento)
+        )
+        && get(
+          /databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento)
+        ).data.ubicacion == request.resource.data.origen
+        && get(
+          /databases/$(database)/documents/inventario/$(request.resource.data.codigoElemento)
+        ).data.aprobacion == 'Aprobado';
 
-      // AVANZAR el traslado: cada paso lo hace su rol y solo cambia sus datos
-      allow update: if
-        // SOLO el Coordinador aprueba o rechaza una solicitud
-        (resource.data.estado == 'Solicitado'
+      allow update: if (
+          resource.data.estado == 'Solicitado'
           && tieneRol(['coordinador'])
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['estado', 'aprobadoPor', 'aprobadoEn', 'motivoRechazo'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado',
+            'aprobadoPor',
+            'aprobadoEn',
+            'motivoRechazo'
+          ])
           && request.resource.data.estado in ['Aprobado', 'Rechazado']
           && request.resource.data.aprobadoPor == rol()
           && request.resource.data.aprobadoEn == request.time
           && request.resource.data.motivoRechazo is string
           && request.resource.data.motivoRechazo.size() <= 200
-          && (request.resource.data.estado == 'Aprobado' || request.resource.data.motivoRechazo.size() > 0))
-        // Bodeguista (o Admin) lo envía
-        || (resource.data.estado == 'Aprobado'
+          && (
+            request.resource.data.estado == 'Aprobado'
+            || request.resource.data.motivoRechazo.size() > 0
+          )
+        ) || (
+          resource.data.estado == 'Aprobado'
           && tieneRol(['bodeguista', 'administrador'])
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['estado', 'enviadoPor', 'enviadoEn'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado',
+            'enviadoPor',
+            'enviadoEn'
+          ])
           && request.resource.data.estado == 'En tránsito'
           && request.resource.data.enviadoPor == rol()
-          && request.resource.data.enviadoEn == request.time)
-        // Bodeguista (o Admin) lo recibe, y al mismo tiempo el elemento
-        // queda en el destino
-        || (resource.data.estado == 'En tránsito'
+          && request.resource.data.enviadoEn == request.time
+        ) || (
+          resource.data.estado == 'En tránsito'
           && tieneRol(['bodeguista', 'administrador'])
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['estado', 'recibidoPor', 'recibidoEn'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado',
+            'recibidoPor',
+            'recibidoEn'
+          ])
           && request.resource.data.estado == 'Recibido'
           && request.resource.data.recibidoPor == rol()
           && request.resource.data.recibidoEn == request.time
-          && getAfter(/databases/$(database)/documents/inventario/$(resource.data.codigoElemento)).data.ubicacion
-               == resource.data.destino);
+          && getAfter(
+            /databases/$(database)/documents/inventario/$(resource.data.codigoElemento)
+          ).data.ubicacion == resource.data.destino
+        );
 
-      // BORRAR: solo el Administrador (para reiniciar las demos)
       allow delete: if tieneRol(['administrador']);
     }
 
-    // ---------- Colección "compras" ----------
-    // Estados: Solicitada -> Aprobada -> Comprada
-    //                     -> Reutilizada (se usa algo que ya existe)
-    //                     -> Rechazada
+    // -----------------------------------------------------------------
+    // COLECCIÓN COMPRAS
+    // -----------------------------------------------------------------
     match /compras/{id} {
+      allow read: if tieneRol([
+        'vendedor',
+        'bodeguista',
+        'administrador',
+        'compras',
+        'coordinador'
+      ]);
 
-      allow read: if tieneRol(['vendedor', 'bodeguista', 'administrador', 'compras', 'coordinador']);
-
-      // SOLICITAR una compra (Vendedor, Compras o Administrador)
       allow create: if tieneRol(['vendedor', 'compras', 'administrador'])
-        && request.resource.data.keys().hasOnly(['nombre', 'categoria', 'cantidad', 'destino', 'motivo',
-                                                 'elementoRelacionado', 'estado', 'solicitadoPor', 'solicitadoEn'])
+        && request.resource.data.keys().hasOnly([
+          'nombre',
+          'categoria',
+          'cantidad',
+          'destino',
+          'motivo',
+          'elementoRelacionado',
+          'estado',
+          'solicitadoPor',
+          'solicitadoEn'
+        ])
         && request.resource.data.estado == 'Solicitada'
         && request.resource.data.solicitadoPor == rol()
         && request.resource.data.solicitadoEn == request.time
         && request.resource.data.nombre is string
-        && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() <= 100
-        && request.resource.data.categoria in ['Mobiliario', 'Decoración', 'Textiles', 'Iluminación', 'Menaje', 'Plantas y materas', 'Electrodomésticos', 'Tecnología', 'Material comercial', 'Utilería']
+        && request.resource.data.nombre.size() > 0
+        && request.resource.data.nombre.size() <= 100
+        && categoriaValida(request.resource.data.categoria)
         && request.resource.data.cantidad is int
-        && request.resource.data.cantidad >= 1 && request.resource.data.cantidad <= 50
+        && request.resource.data.cantidad >= 1
+        && request.resource.data.cantidad <= 50
         && ubicacionValida(request.resource.data.destino)
         && request.resource.data.motivo is string
-        && request.resource.data.motivo.size() > 0 && request.resource.data.motivo.size() <= 300;
+        && request.resource.data.motivo.size() > 0
+        && request.resource.data.motivo.size() <= 300;
 
-      allow update: if
-        // Compras (o Admin) revisa: aprueba, rechaza o manda a reutilizar
-        (resource.data.estado == 'Solicitada'
+      allow update: if (
+          resource.data.estado == 'Solicitada'
           && tieneRol(['compras', 'administrador'])
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['estado', 'revisadoPor', 'revisadoEn', 'motivoRechazo', 'reutilizaCodigo'])
-          && request.resource.data.estado in ['Aprobada', 'Rechazada', 'Reutilizada']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado',
+            'revisadoPor',
+            'revisadoEn',
+            'motivoRechazo',
+            'reutilizaCodigo'
+          ])
+          && request.resource.data.estado in [
+            'Aprobada',
+            'Rechazada',
+            'Reutilizada'
+          ]
           && request.resource.data.revisadoPor == rol()
           && request.resource.data.revisadoEn == request.time
-          && (request.resource.data.estado != 'Rechazada' || request.resource.data.motivoRechazo.size() > 0)
-          && (request.resource.data.estado != 'Reutilizada'
-              || exists(/databases/$(database)/documents/inventario/$(request.resource.data.reutilizaCodigo))))
-        // Compras (o Admin) registra lo que compró
-        || (resource.data.estado == 'Aprobada'
+          && (
+            request.resource.data.estado != 'Rechazada'
+            || request.resource.data.motivoRechazo.size() > 0
+          )
+          && (
+            request.resource.data.estado != 'Reutilizada'
+            || exists(
+              /databases/$(database)/documents/inventario/$(request.resource.data.reutilizaCodigo)
+            )
+          )
+        ) || (
+          resource.data.estado == 'Aprobada'
           && tieneRol(['compras', 'administrador'])
-          && request.resource.data.diff(resource.data).affectedKeys()
-               .hasOnly(['estado', 'compradoPor', 'compradoEn', 'valorUnitario', 'codigosCreados'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'estado',
+            'compradoPor',
+            'compradoEn',
+            'valorUnitario',
+            'codigosCreados'
+          ])
           && request.resource.data.estado == 'Comprada'
           && request.resource.data.compradoPor == rol()
           && request.resource.data.compradoEn == request.time
-          && request.resource.data.valorUnitario is int && request.resource.data.valorUnitario >= 0
+          && request.resource.data.valorUnitario is int
+          && request.resource.data.valorUnitario >= 0
           && request.resource.data.codigosCreados is list
-          && request.resource.data.codigosCreados.size() == resource.data.cantidad);
+          && request.resource.data.codigosCreados.size() == resource.data.cantidad
+        );
 
+      allow delete: if tieneRol(['administrador']);
+    }
+
+    // -----------------------------------------------------------------
+    // COLECCIÓN MOVIMIENTOS DE ACTIVOS
+    // -----------------------------------------------------------------
+    match /movimientos_activos/{id} {
+      // El historial forma parte de la trazabilidad general del activo.
+      allow read: if tieneRol([
+        'vendedor',
+        'bodeguista',
+        'administrador',
+        'compras',
+        'coordinador'
+      ]);
+
+      // Solo el área unificada y el Administrador crean movimientos.
+      allow create: if tieneRol(['compras', 'administrador'])
+        && request.resource.data.keys().hasOnly([
+          'codigoActivo',
+          'nombreActivo',
+          'tipo',
+          'estadoAnterior',
+          'estadoNuevo',
+          'motivo',
+          'observaciones',
+          'creadoPor',
+          'creadoEn'
+        ])
+        && request.resource.data.codigoActivo is string
+        && request.resource.data.codigoActivo.matches('^EL-[0-9]{5}$')
+        && request.resource.data.nombreActivo is string
+        && request.resource.data.nombreActivo.size() <= 100
+        && request.resource.data.tipo in [
+          'ADQUISICIÓN',
+          'ACTUALIZACIÓN',
+          'SALDO',
+          'BAJA'
+        ]
+        && request.resource.data.estadoAnterior is string
+        && request.resource.data.estadoAnterior.size() <= 40
+        && request.resource.data.estadoNuevo is string
+        && request.resource.data.estadoNuevo.size() <= 40
+        && request.resource.data.motivo is string
+        && request.resource.data.motivo.size() <= 150
+        && request.resource.data.observaciones is string
+        && request.resource.data.observaciones.size() <= 300
+        && request.resource.data.creadoPor == rol()
+        && request.resource.data.creadoEn == request.time
+        && exists(
+          /databases/$(database)/documents/inventario/$(request.resource.data.codigoActivo)
+        );
+
+      // Los movimientos son inmutables: no se editan.
+      allow update: if false;
+
+      // Solo el Administrador puede limpiar la colección durante una demo.
       allow delete: if tieneRol(['administrador']);
     }
   }
