@@ -251,8 +251,10 @@ function abrirMenu() {
   menuLateral.classList.add("abierto");
   fondoMenu.classList.remove("oculto");
   botonMenu.setAttribute("aria-expanded", "true");
+  // El menú entra con una animación: esperamos un instante a que sea
+  // visible para poner el foco en la opción actual (y usar las flechas)
   const activo = menu.querySelector(".activo") || menu.querySelector("button");
-  if (activo) activo.focus();
+  if (activo) setTimeout(function () { activo.focus(); }, 60);
 }
 
 function cerrarMenu() {
@@ -382,6 +384,112 @@ document.addEventListener("click", function (evento) {
 // El logo lleva al inicio
 document.getElementById("botonLogo").addEventListener("click", function () {
   if (usuarioConectado) irA("Inicio", true);
+});
+
+// =====================================================================
+// 7. MANEJO CON LAS FLECHAS DEL TECLADO
+// =====================================================================
+// Menú de arriba:  ← →  pasan de una opción a otra.
+//                  ↓    abre el desplegable (Inventario, Traslados...).
+//                  ↑ ↓  se mueven dentro del desplegable abierto.
+//                  Esc  lo cierra y vuelve a la opción de arriba.
+// Menú ☰:          ↑ ↓  se mueven entre las opciones.
+// En cualquier parte: Alt + ←  hace lo mismo que el botón Atrás.
+// Dentro de los campos de texto y las listas, las flechas funcionan
+// normal (mueven el cursor o cambian la opción), no las tocamos.
+
+// Opciones de primer nivel del encabezado (incluida la cuenta)
+function opcionesDeArriba() {
+  const lista = [];
+  for (const el of navSuperior.children) {
+    lista.push(el.tagName === "DETAILS" ? el.querySelector("summary") : el);
+  }
+  const cuenta = document.querySelector(".encabezado .cuenta summary");
+  if (cuenta) lista.push(cuenta);
+  return lista;
+}
+
+// Pone el foco en el elemento siguiente (+1) o anterior (-1) de la lista,
+// y si se pasa del final vuelve al principio (y al revés)
+function moverFoco(lista, actual, paso) {
+  if (lista.length === 0) return;
+  const i = lista.indexOf(actual);
+  const siguiente = (i + paso + lista.length) % lista.length;
+  lista[siguiente].focus();
+}
+
+function estaEscribiendo(elemento) {
+  return elemento.matches("input, select, textarea") || elemento.isContentEditable;
+}
+
+document.addEventListener("keydown", function (evento) {
+  const aqui = evento.target;
+  const tecla = evento.key;
+
+  // Alt + ← = Atrás (solo si ya hay a dónde volver)
+  if (evento.altKey && tecla === "ArrowLeft" && usuarioConectado && historial.length > 0) {
+    evento.preventDefault();
+    atras();
+    return;
+  }
+
+  if (estaEscribiendo(aqui) || evento.altKey || evento.ctrlKey) return;
+
+  // --- 1. Dentro de un desplegable abierto del encabezado ---
+  const desplegable = aqui.closest(".encabezado details");
+  const dentroDelPanel = desplegable && aqui.tagName === "BUTTON";
+  if (dentroDelPanel) {
+    const botones = Array.from(desplegable.querySelectorAll(".panel button, .cuenta-menu button"));
+    const resumen = desplegable.querySelector("summary");
+    if (tecla === "ArrowDown" || tecla === "ArrowUp") {
+      evento.preventDefault();
+      moverFoco(botones, aqui, tecla === "ArrowDown" ? 1 : -1);
+    } else if (tecla === "ArrowLeft" || tecla === "ArrowRight") {
+      evento.preventDefault();
+      desplegable.open = false;
+      moverFoco(opcionesDeArriba(), resumen, tecla === "ArrowRight" ? 1 : -1);
+    } else if (tecla === "Escape") {
+      desplegable.open = false;
+      resumen.focus();
+    }
+    return;
+  }
+
+  // --- 2. En una opción de primer nivel del encabezado ---
+  const arriba = opcionesDeArriba();
+  if (arriba.includes(aqui)) {
+    if (tecla === "ArrowRight" || tecla === "ArrowLeft") {
+      evento.preventDefault();
+      cerrarDesplegables();
+      moverFoco(arriba, aqui, tecla === "ArrowRight" ? 1 : -1);
+    } else if (tecla === "ArrowDown" && aqui.tagName === "SUMMARY") {
+      evento.preventDefault();
+      const d = aqui.parentElement;
+      cerrarDesplegables(d);
+      d.open = true;
+      const primero = d.querySelector(".panel button, .cuenta-menu button");
+      if (primero) primero.focus();
+    } else if (tecla === "Home" || tecla === "End") {
+      evento.preventDefault();
+      cerrarDesplegables();
+      arriba[tecla === "Home" ? 0 : arriba.length - 1].focus();
+    }
+    return;
+  }
+
+  // --- 3. En el menú ☰ (lateral) ---
+  if (menu.contains(aqui)) {
+    const botones = Array.from(menu.querySelectorAll("button"));
+    if (tecla === "ArrowDown" || tecla === "ArrowUp") {
+      evento.preventDefault();
+      moverFoco(botones, aqui, tecla === "ArrowDown" ? 1 : -1);
+    } else if (tecla === "Home" || tecla === "End") {
+      evento.preventDefault();
+      botones[tecla === "Home" ? 0 : botones.length - 1].focus();
+    } else if (tecla === "Escape") {
+      botonMenu.focus();   // al cerrar con Esc, el foco vuelve al ☰
+    }
+  }
 });
 
 escucharSesion(function (usuario) {

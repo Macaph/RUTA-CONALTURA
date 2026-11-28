@@ -1040,3 +1040,11 @@ select { max-width: 100%; }   /* que los filtros no se salgan en celulares angos
   .nav-superior { gap: 2px; }
   .nav-superior > button, .nav-superior summary { padding: 9px 10px; }
 }
+
+/* Teclado: que se note en qué opción va el foco al moverse con las flechas */
+.menu button:focus-visible,
+.panel button:focus-visible,
+.cuenta-menu button:focus-visible {
+  outline: 2px solid var(--lima);
+  outline-offset: -2px;
+}
