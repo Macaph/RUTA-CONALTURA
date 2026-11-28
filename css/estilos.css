@@ -1064,3 +1064,4 @@ select { max-width: 100%; }   /* que los filtros no se salgan en celulares angos
 }
 .enlace-olvide:hover { color: var(--verde-oscuro); }
 .ayuda-recuperar { margin: 0 0 8px; color: var(--texto); }
+.nota-demo { display: block; margin-top: 6px; font-size: 0.8rem; color: var(--gris, #6b7280); font-weight: 400; }

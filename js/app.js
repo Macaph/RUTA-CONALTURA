@@ -382,17 +382,13 @@ async function enviarRecuperacion(evento) {
 
   try {
     const resultado = await recuperarContrasena(campoRecuperar.value);
-    const correo = "<b>" + escapar(resultado.correo) + "</b>";
-    if (resultado.enviado) {
-      mensajeRecuperar.className = "exito";
-      mensajeRecuperar.innerHTML = "Listo. Si " + correo + " está registrado, te llegará un correo " +
-        "con el enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
-    } else {
-      mensajeRecuperar.className = "aviso";
-      mensajeRecuperar.innerHTML = "<b>Modo demostración.</b> En producción, RUTA le enviaría a " + correo +
-        " un correo con el enlace para crear una contraseña nueva (función de Firebase ya incluida). " +
-        "El envío está desactivado porque las cuentas de prueba usan el dominio real de Conaltura.";
-    }
+    // Mensaje genérico: es el mismo para cualquier correo, así no se
+    // revela cuáles están registrados en RUTA
+    mensajeRecuperar.className = "exito";
+    mensajeRecuperar.innerHTML =
+      "✔ <b>Te enviamos un enlace de recuperación a " + escapar(resultado.correo) + ".</b> " +
+      "Revisa tu bandeja de entrada y la carpeta de spam." +
+      (resultado.enviado ? "" : '<small class="nota-demo">Prototipo: envío simulado.</small>');
   } catch (error) {
     mensajeRecuperar.className = "error";
     mensajeRecuperar.textContent = mensajeDeError(error);
