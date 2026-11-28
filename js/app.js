@@ -23,6 +23,7 @@ import { mostrarNovedad, mostrarRevisarCompras, mostrarRegistrarCompra, mostrarC
 import { mostrarHistorialBodega } from "./bodeguista.js";
 import { mostrarMisElementos } from "./mis-elementos.js";
 import { mostrarReportes, mostrarUsuarios } from "./reportes.js";
+import { escapar } from "./utilidades.js";
 
 // =====================================================================
 // 1. LOS ROLES Y SUS FUNCIONES (tal como están en las notas adhesivas)
@@ -84,6 +85,14 @@ const ROLES = {
   }
 };
 
+// En el menú del encabezado, las opciones parecidas se juntan en un
+// desplegable. Lo que no esté aquí sale como enlace directo.
+const GRUPOS = {
+  "Inventario": ["Ver inventario", "Registrar elementos", "Aprobar inventario", "Mis elementos asignados"],
+  "Traslados": ["Solicitar elementos", "Aprobar solicitudes", "Enviar / Recibir traslados", "Informar traslados", "Traslados"],
+  "Compras": ["Revisar solicitudes de compra", "Registrar compra", "Compras"]
+};
+
 // =====================================================================
 // 2. TOMAMOS LOS ELEMENTOS DEL HTML QUE VAMOS A USAR
 // =====================================================================
@@ -104,6 +113,7 @@ const botonAtras       = document.getElementById("botonAtras");
 const tituloSeccion    = document.getElementById("tituloSeccion");
 const contenido        = document.getElementById("contenido");
 const cajaUsuario      = document.getElementById("usuarioActual");
+const navSuperior      = document.getElementById("navSuperior");
 
 // Aquí guardamos quién está conectado: {correo, rol}
 let usuarioConectado = null;
@@ -159,10 +169,19 @@ function mostrarPanel() {
 
   // Arriba a la derecha: rol conectado y botón Salir
   cajaUsuario.classList.remove("oculto");
+  // Como en las páginas modernas: un círculo con la inicial y, al tocarlo,
+  // se despliega la cuenta y la opción de salir
   cajaUsuario.innerHTML =
-    "<span>Conectado como</span>" +
-    '<span class="etiqueta-rol rol-' + usuarioConectado.rol + '">' + rol.nombre + "</span>" +
-    '<button class="boton boton-claro" id="botonSalir">Salir</button>';
+    '<details class="desplegable cuenta">' +
+    '<summary aria-label="Cuenta de ' + rol.nombre + '">' +
+    '<span class="avatar">' + rol.nombre.charAt(0) + "</span>" +
+    '<span class="cuenta-nombre">' + rol.nombre + "</span>" +
+    "</summary>" +
+    '<div class="cuenta-menu">' +
+    "<b>" + rol.nombre + "</b>" +
+    '<span class="cuenta-correo">' + escapar(usuarioConectado.correo) + "</span>" +
+    '<button id="botonSalir">Cerrar sesión</button>' +
+    "</div></details>";
   document.getElementById("botonSalir").addEventListener("click", salir);
 
   // Armamos el menú lateral: un botón por cada opción del rol
@@ -171,11 +190,38 @@ function mostrarPanel() {
   for (const opcion of rol.opciones) {
     menu.appendChild(crearBotonMenu(opcion));
   }
+  armarMenuSuperior(rol.opciones);
 
   // Al entrar, empezamos en Inicio y sin historial
   historial = [];
   opcionActual = null;
   irA("Inicio", false);
+}
+
+// Arma el menú horizontal del encabezado
+function armarMenuSuperior(opciones) {
+  navSuperior.innerHTML = "";
+  const puestas = [];
+
+  for (const opcion of opciones) {
+    if (puestas.includes(opcion)) continue;
+
+    const grupo = Object.keys(GRUPOS).find(function (g) { return GRUPOS[g].includes(opcion); });
+    const delGrupo = grupo ? opciones.filter(function (o) { return GRUPOS[grupo].includes(o); }) : [opcion];
+    puestas.push(...delGrupo);
+
+    // Si el grupo tiene una sola opción, no hace falta desplegable
+    if (delGrupo.length === 1) {
+      navSuperior.appendChild(crearBotonMenu(opcion));
+      continue;
+    }
+
+    const desplegable = document.createElement("details");
+    desplegable.className = "desplegable";
+    desplegable.innerHTML = "<summary>" + grupo + '</summary><div class="panel"></div>';
+    for (const o of delGrupo) desplegable.querySelector(".panel").appendChild(crearBotonMenu(o));
+    navSuperior.appendChild(desplegable);
+  }
 }
 
 function crearBotonMenu(texto) {
@@ -218,9 +264,14 @@ function irA(opcion, guardar) {
   opcionActual = opcion;
 
   // Marcamos en el menú la opción activa
-  for (const b of menu.querySelectorAll("button")) {
+  for (const b of document.querySelectorAll("[data-opcion]")) {
     b.classList.toggle("activo", b.dataset.opcion === opcion);
   }
+  // También se resalta el grupo que contiene la opción
+  for (const d of navSuperior.querySelectorAll("details")) {
+    d.classList.toggle("activo", d.querySelector(".activo") !== null);
+  }
+  cerrarDesplegables();
   tituloSeccion.textContent = opcion;
   botonAtras.classList.toggle("oculto", historial.length === 0);
 
@@ -298,7 +349,7 @@ function mostrarInicio() {
     }
     html += "</ul>";
   }
-  html += '<p class="ayuda-menu">Abre el menú <b>☰</b> para empezar.</p>';
+  html += '<p class="ayuda-menu">Usa el menú para empezar.</p>';
 
   contenido.innerHTML = html;
 }
@@ -315,7 +366,26 @@ document.getElementById("cerrarMenu").addEventListener("click", cerrarMenu);
 fondoMenu.addEventListener("click", cerrarMenu);
 botonAtras.addEventListener("click", atras);
 document.addEventListener("keydown", function (evento) {
-  if (evento.key === "Escape") cerrarMenu();   // Esc cierra el menú
+  if (evento.key === "Escape") {
+    cerrarMenu();    // Esc cierra el menú
+    cerrarDesplegables();  // y los del encabezado
+  }
+});
+
+// Los desplegables del encabezado (menú y cuenta) se cierran al
+// elegir algo, al tocar afuera o con Esc. "menosEste" se queda abierto.
+function cerrarDesplegables(menosEste) {
+  for (const d of document.querySelectorAll(".encabezado details[open]")) {
+    if (d !== menosEste) d.open = false;
+  }
+}
+document.addEventListener("click", function (evento) {
+  cerrarDesplegables(evento.target.closest(".encabezado details"));
+});
+
+// El logo lleva al inicio
+document.getElementById("botonLogo").addEventListener("click", function () {
+  if (usuarioConectado) irA("Inicio", true);
 });
 
 // Firebase nos avisa si hay alguien conectado (también al recargar la página)

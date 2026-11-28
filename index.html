@@ -25,14 +25,24 @@
   <!-- ===== ENCABEZADO: siempre visible ===== -->
   <header class="encabezado">
     <div class="marca">
-      <!-- Logo de RUTA (ya trae "Registro Unificado de Traslados y Activos") -->
+      <!-- Menú ☰: vive en el encabezado (se esconde en la pantalla de ingreso) -->
+      <button id="botonMenu" class="boton-hamburguesa" aria-label="Abrir menú"
+              aria-expanded="false" aria-controls="menuLateral">
+        <span></span><span></span><span></span>
+      </button>
       <h1 class="logo">
-        <img src="img/logo-ruta.png" alt="RUTA · Registro Unificado de Traslados y Activos" width="137" height="64">
+        <button id="botonLogo" type="button" aria-label="Ir al inicio">
+          <img src="img/logo-ruta.png" alt="RUTA · Registro Unificado de Traslados y Activos" width="94" height="44">
+        </button>
       </h1>
-      <p class="slogan">Cada elemento con su ruta.</p>
     </div>
-    <!-- Aquí aparece quién está conectado (lo llena app.js) -->
-    <div id="usuarioActual" class="usuario-actual oculto"></div>
+    <!-- Menú horizontal para computador (lo llena app.js según el rol) -->
+    <nav id="navSuperior" class="nav-superior" aria-label="Secciones"></nav>
+
+    <div class="encabezado-derecha">
+      <!-- Aquí aparece la cuenta conectada (lo llena app.js) -->
+      <div id="usuarioActual" class="usuario-actual oculto"></div>
+    </div>
   </header>
 
   <main>
@@ -69,13 +79,8 @@
     <!-- ===== PANTALLA 2: PANEL PRINCIPAL (oculto hasta ingresar) ===== -->
     <section id="pantallaPanel" class="oculto">
 
-      <!-- Menú con las opciones del rol (lo arma app.js) -->
-      <!-- Barra de navegación: botón de menú (☰), botón Atrás y nombre de la sección -->
+      <!-- Barra de navegación: botón Atrás y nombre de la sección -->
       <div class="barra-navegacion">
-        <button id="botonMenu" class="boton-hamburguesa" aria-label="Abrir menú"
-                aria-expanded="false" aria-controls="menuLateral">
-          <span></span><span></span><span></span>
-        </button>
         <button id="botonAtras" class="boton-atras oculto">← Atrás</button>
         <span id="tituloSeccion" class="titulo-seccion">Inicio</span>
       </div>
