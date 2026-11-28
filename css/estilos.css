@@ -1032,3 +1032,11 @@ select { max-width: 100%; }   /* que los filtros no se salgan en celulares angos
 /* Cuenta sin recuadro: solo el círculo y el nombre; se ilumina al pasar el mouse */
 .cuenta summary { border: 0; border-radius: 999px; padding: 4px 12px 4px 4px; transition: background-color 0.15s; }
 .cuenta summary:hover, .cuenta[open] summary { background: rgba(255, 255, 255, 0.14); }
+
+/* Computador angosto: se compacta para que el menú quepa en una fila */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .encabezado { gap: 12px; padding: 12px 16px; }
+  .cuenta-nombre { display: none; }
+  .nav-superior { gap: 2px; }
+  .nav-superior > button, .nav-superior summary { padding: 9px 10px; }
+}

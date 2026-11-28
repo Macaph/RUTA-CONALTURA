@@ -1,0 +1,107 @@
+# ============================================================
+# RUTA-CONALTURA - ARCHIVOS QUE GIT NO DEBE VERSIONAR
+# ============================================================
+
+# Entornos virtuales de Python
+.venv/
+venv/
+env/
+ENV/
+
+# Caché y archivos temporales de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Configuración local de PyCharm / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Configuración local de Visual Studio Code
+.vscode/
+
+# Archivos del sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Registros y archivos temporales
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# Cobertura y resultados de pruebas
+coverage/
+.nyc_output/
+htmlcov/
+
+# Dependencias de Node.js, si se usan localmente para validación
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Archivos de compilación o distribución
+build/
+dist/
+out/
+.cache/
+
+# Servidores locales
+.http-server/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Credenciales y llaves privadas
+*.pem
+*.key
+*.p12
+*.pfx
+serviceAccountKey.json
+service-account*.json
+firebase-adminsdk*.json
+
+# Configuración local de Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Datos exportados por emuladores locales de Firebase
+firebase-export/
+firestore_export/
+
+# Archivos temporales creados por Microsoft Excel
+~$*.xlsx
+~$*.xls
+
+# Archivos comprimidos generados localmente
+*.zip
+*.rar
+*.7z
+
+# Capturas o evidencias que no se subirán al repositorio
+capturas-locales/
+evidencias-locales/
+
+# Copias locales del módulo
+modulo_paquete/
+
+# Archivos internos de Visual Studio
+.vs/
