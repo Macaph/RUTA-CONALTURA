@@ -1048,3 +1048,19 @@ select { max-width: 100%; }   /* que los filtros no se salgan en celulares angos
   outline: 2px solid var(--lima);
   outline-offset: -2px;
 }
+
+/* ¿Olvidaste tu contraseña? (parece un enlace, pero es un botón) */
+.enlace-olvide {
+  background: none;
+  border: 0;
+  padding: 6px 0;
+  margin-top: 4px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--petroleo);
+  text-decoration: underline;
+  cursor: pointer;
+  align-self: center;
+}
+.enlace-olvide:hover { color: var(--verde-oscuro); }
+.ayuda-recuperar { margin: 0 0 8px; color: var(--texto); }

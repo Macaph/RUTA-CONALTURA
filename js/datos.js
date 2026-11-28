@@ -18,7 +18,8 @@ import { agrupacionPorNombre } from "./utilidades.js";
 import {
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 import {
   collection,
@@ -58,12 +59,32 @@ function rolDesdeCorreo(correo) {
   return String(correo || "").split("@")[0].toLowerCase();
 }
 
-export async function iniciarSesion(usuario, contrasena) {
-  // Se puede escribir solo "vendedor" o el correo completo
-  let correo = usuario.trim().toLowerCase();
+// Se puede escribir solo "vendedor" o el correo completo
+function correoDesde(usuario) {
+  let correo = String(usuario || "").trim().toLowerCase();
   if (!correo.includes("@")) correo = correo + DOMINIO;
+  return correo;
+}
 
-  await signInWithEmailAndPassword(auth, correo, contrasena);
+export async function iniciarSesion(usuario, contrasena) {
+  await signInWithEmailAndPassword(auth, correoDesde(usuario), contrasena);
+}
+
+// ---------- Recuperar la contraseña ----------
+// Firebase trae lista la función sendPasswordResetEmail: manda un correo
+// con un enlace para crear una contraseña nueva.
+// INTERRUPTOR: está en false porque las cuentas de prueba usan el dominio
+// real de Conaltura (@conaltura.com) y no queremos mandar correos a buzones
+// reales. Cuando cada usuario tenga su propio correo, se cambia a true.
+export const ENVIO_REAL_RECUPERACION = false;
+
+export async function recuperarContrasena(usuario) {
+  const correo = correoDesde(usuario);
+  if (ENVIO_REAL_RECUPERACION) {
+    auth.languageCode = "es";            // el correo llega en español
+    await sendPasswordResetEmail(auth, correo);
+  }
+  return { correo: correo, enviado: ENVIO_REAL_RECUPERACION };
 }
 
 export async function cerrarSesion() {

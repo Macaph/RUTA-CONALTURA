@@ -6,7 +6,7 @@
   El rol sale del correo (vendedor@conaltura.com -> vendedor).
 */
 
-import { iniciarSesion, cerrarSesion, escucharSesion, mensajeDeError } from "./datos.js";
+import { iniciarSesion, cerrarSesion, escucharSesion, mensajeDeError, recuperarContrasena } from "./datos.js";
 import { mostrarVerInventario, mostrarRegistrar } from "./inventario.js";
 import { mostrarAprobar } from "./aprobaciones.js";
 import {
@@ -162,6 +162,7 @@ async function salir() {
 // 4. PANTALLA SEGÚN LA SESIÓN
 // =====================================================================
 function mostrarIngreso() {
+  mostrarFormIngreso();
   document.body.classList.add("en-ingreso");
   pantallaCargando.classList.add("oculto");
   pantallaPanel.classList.add("oculto");
@@ -354,10 +355,60 @@ function mostrarInicio() {
     '<p class="parrafo-inicio">' + rol.parrafo + "</p>";
 }
 
+// ---------- ¿Olvidaste tu contraseña? ----------
+const formRecuperar    = document.getElementById("formRecuperar");
+const campoRecuperar   = document.getElementById("campoRecuperar");
+const mensajeRecuperar = document.getElementById("mensajeRecuperar");
+const botonRecuperar   = document.getElementById("botonRecuperar");
+
+// Cambia entre el formulario de ingreso y el de recuperar
+function mostrarFormRecuperar() {
+  formIngreso.classList.add("oculto");
+  formRecuperar.classList.remove("oculto");
+  mensajeRecuperar.classList.add("oculto");
+  campoRecuperar.value = campoUsuario.value;   // si ya escribió el usuario, lo pasamos
+  campoRecuperar.focus();
+}
+function mostrarFormIngreso() {
+  formRecuperar.classList.add("oculto");
+  formIngreso.classList.remove("oculto");
+}
+
+async function enviarRecuperacion(evento) {
+  evento.preventDefault();
+  botonRecuperar.disabled = true;
+  botonRecuperar.textContent = "Enviando...";
+  mensajeRecuperar.className = "";
+
+  try {
+    const resultado = await recuperarContrasena(campoRecuperar.value);
+    const correo = "<b>" + escapar(resultado.correo) + "</b>";
+    if (resultado.enviado) {
+      mensajeRecuperar.className = "exito";
+      mensajeRecuperar.innerHTML = "Listo. Si " + correo + " está registrado, te llegará un correo " +
+        "con el enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
+    } else {
+      mensajeRecuperar.className = "aviso";
+      mensajeRecuperar.innerHTML = "<b>Modo demostración.</b> En producción, RUTA le enviaría a " + correo +
+        " un correo con el enlace para crear una contraseña nueva (función de Firebase ya incluida). " +
+        "El envío está desactivado porque las cuentas de prueba usan el dominio real de Conaltura.";
+    }
+  } catch (error) {
+    mensajeRecuperar.className = "error";
+    mensajeRecuperar.textContent = mensajeDeError(error);
+  }
+
+  botonRecuperar.disabled = false;
+  botonRecuperar.textContent = "Enviar enlace";
+}
+
 // =====================================================================
 // 6. ARRANQUE
 // =====================================================================
 formIngreso.addEventListener("submit", ingresar);
+formRecuperar.addEventListener("submit", enviarRecuperacion);
+document.getElementById("botonOlvide").addEventListener("click", mostrarFormRecuperar);
+document.getElementById("botonVolverIngreso").addEventListener("click", mostrarFormIngreso);
 
 botonMenu.addEventListener("click", abrirMenu);
 document.getElementById("cerrarMenu").addEventListener("click", cerrarMenu);

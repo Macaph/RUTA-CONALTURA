@@ -93,6 +93,35 @@
         <button type="submit" id="botonIngresar" class="boton">
           Ingresar
         </button>
+
+        <button type="button" id="botonOlvide" class="enlace-olvide">
+          ¿Olvidaste tu contraseña?
+        </button>
+      </form>
+
+      <!-- Recuperar contraseña (se muestra al tocar "¿Olvidaste tu contraseña?") -->
+      <form id="formRecuperar" class="formulario oculto">
+        <p class="ayuda-recuperar">
+          Escribe tu usuario o correo y te enviaremos un enlace para crear una contraseña nueva.
+        </p>
+
+        <label for="campoRecuperar">Usuario o correo</label>
+        <input
+          type="text"
+          id="campoRecuperar"
+          placeholder="Ej: vendedor"
+          autocomplete="username"
+          required
+        >
+
+        <p id="mensajeRecuperar" class="oculto" role="status" aria-live="polite"></p>
+
+        <button type="submit" id="botonRecuperar" class="boton">
+          Enviar enlace
+        </button>
+        <button type="button" id="botonVolverIngreso" class="enlace-olvide">
+          ← Volver al ingreso
+        </button>
       </form>
     </section>
 
