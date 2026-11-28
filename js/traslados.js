@@ -17,7 +17,7 @@
 import { leerInventario, leerTraslados, crearSolicitud, avanzarTraslado, mensajeDeError } from "./datos.js";
 import { escapar, normalizar, mostrarCargando, aprobacionDe, fecha, UBICACIONES, UBICACIONES_DISPONIBLES } from "./utilidades.js";
 
-const ESTADOS_TRASLADO = ["Solicitado", "Aprobado", "En tránsito", "Recibido", "Rechazado"];
+export const ESTADOS_TRASLADO = ["Solicitado", "Aprobado", "En tránsito", "Recibido", "Rechazado"];
 const ICONOS = { "Solicitado": "📝", "Aprobado": "✅", "En tránsito": "🚚", "Recibido": "📦", "Rechazado": "❌" };
 
 // Estados en los que el traslado sigue "abierto"
@@ -32,7 +32,7 @@ let pantallaActual = null; // para volver a dibujar después de una acción
 // =====================================================================
 // 1. AYUDANTES
 // =====================================================================
-function etiquetaTraslado(t) {
+export function etiquetaTraslado(t) {
   let html = '<span class="traslado traslado-' + normalizar(t.estado).replace(" ", "-") + '">' +
     ICONOS[t.estado] + " " + escapar(t.estado) + "</span>";
   if (t.estado === "Rechazado" && t.motivoRechazo) {
@@ -298,7 +298,7 @@ function dibujarInforme(conFormulario) {
       activarBotones();
     }
     filtro.addEventListener("change", redibujar);
-    document.getElementById("botonExportarTraslados").addEventListener("click", exportarTraslados);
+    document.getElementById("botonExportarTraslados").addEventListener("click", function () { exportarTraslados(traslados); });
     redibujar();
     if (conFormulario) activarFormulario();
   };
@@ -306,9 +306,9 @@ function dibujarInforme(conFormulario) {
 export const mostrarInformeTraslados = pantalla(dibujarInforme(false));
 export const mostrarTrasladosAdmin = pantalla(dibujarInforme(true));
 
-function exportarTraslados() {
-  if (traslados.length === 0) { alert("No hay traslados para descargar."); return; }
-  const filas = traslados.map(function (t) {
+export function exportarTraslados(lista) {
+  if (lista.length === 0) { alert("No hay traslados para descargar."); return; }
+  const filas = lista.map(function (t) {
     return {
       "Código": t.codigoElemento,
       "Elemento": t.nombreElemento,

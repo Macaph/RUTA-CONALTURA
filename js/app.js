@@ -17,10 +17,10 @@ import {
   mostrarSolicitar,
   mostrarAprobarSolicitudes,
   mostrarEnviarRecibir,
-  mostrarInformeTraslados,
   mostrarTrasladosAdmin
 } from "./traslados.js";
 import { mostrarNovedad, mostrarRevisarCompras, mostrarRegistrarCompra, mostrarComprasAdmin, preseleccionarNovedad } from "./compras.js";
+import { mostrarHistorialBodega } from "./bodeguista.js";
 import { mostrarMisElementos } from "./mis-elementos.js";
 import { mostrarReportes, mostrarUsuarios } from "./reportes.js";
 
@@ -253,7 +253,7 @@ function abrirOpcion(opcion) {
   } else if (opcion === "Enviar / Recibir traslados") {
     mostrarEnviarRecibir(contenido, usuarioConectado);
   } else if (opcion === "Informar traslados") {
-    mostrarInformeTraslados(contenido, usuarioConectado);
+    mostrarHistorialBodega(contenido);                       // js/bodeguista.js
   } else if (opcion === "Traslados") {
     mostrarTrasladosAdmin(contenido, usuarioConectado);
   } else if (opcion === "Mis elementos asignados") {

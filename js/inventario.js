@@ -307,6 +307,14 @@ export function mostrarRegistrar(cajaContenido, usuarioConectado) {
 
   contenido.innerHTML = html;
 
+  // El Bodeguista casi siempre registra lo que llega a la bodega:
+  // se la dejamos escogida (la puede cambiar).
+  if (usuario.rol === "bodeguista") {
+    const selUbicacion = document.getElementById("elUbicacion");
+    selUbicacion.value = "Bodega central";
+    for (const opcion of selUbicacion.options) opcion.defaultSelected = opcion.value === "Bodega central";
+  }
+
   document.getElementById("botonPlantilla").addEventListener("click", descargarPlantilla);
   document.getElementById("archivoExcel").addEventListener("change", importarExcel);
   document.getElementById("formElemento").addEventListener("submit", guardarElemento);

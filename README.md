@@ -68,6 +68,7 @@ Las contraseñas tampoco están en el código: las revisa Firebase Authenticatio
 | `js/traslados.js` | Solicitudes, envíos, recibos e historial | El camión de mudanzas |
 | `js/compras.js` | Novedades, solicitudes de compra y reutilización | La oficina de compras |
 | `js/reportes.js` | Reportes, gráficas y tabla de permisos | El tablero de control |
+| `js/bodeguista.js` | Informe de traslados del Bodeguista, con el recorrido completo | La planilla de la bodega |
 | `js/mis-elementos.js` | Elementos de los que es responsable el Vendedor | Mi cajón |
 | `js/utilidades.js` | Funciones pequeñas que usan varios archivos | La caja de herramientas |
 | `js/datos.js` | El único archivo que habla con la base de datos | El mensajero |
