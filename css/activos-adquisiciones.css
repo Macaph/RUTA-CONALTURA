@@ -452,3 +452,15 @@
     animation-iteration-count: 1 !important;
   }
 }
+/* Contraste de la opción seleccionada en el menú lateral */
+#menu.menu button.activo*
+#menuLateral #menu button.activo *
+  background-color: #9cd818 !impo*tant;
+  color: #12333d !important;*  font-weight: 800 !important;
+}
+
+*menu.menu button.activo:hover,
+#me*uLateral #menu button.activo:hover*{
+  background-color: #9cd818 !imp*rtant;
+  color: #12333d !important*
+}

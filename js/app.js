@@ -101,6 +101,7 @@ const ROLES = {
     opciones: [
       "Ver inventario",
       "Revisar solicitudes de compra",
+      "Registrar compra",
       "Registrar adquisición",
       "Gestionar activos",
       "Gestionar saldos y bajas",

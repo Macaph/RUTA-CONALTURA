@@ -14,6 +14,7 @@
 
 import {
   leerInventario,
+  leerTraslados,
   guardarElementos,
   leerMovimientosActivos,
   registrarMovimientoActivo,
@@ -41,6 +42,7 @@ let contenido = null;
 let usuario = null;
 let inventario = [];
 let movimientos = [];
+let traslados = [];
 let pantallaActual = null;
 
 const MOTIVOS_SALDO = [
@@ -50,6 +52,16 @@ const MOTIVOS_SALDO = [
   "Disponible para reutilización",
   "Otro"
 ];
+
+const RESPONSABLES = [
+  "Vendedor",
+  "Bodeguista",
+  "Coordinador de sala",
+  "Compras",
+  "Administrador"
+];
+
+const ESTADOS_TRASLADO_ACTIVO = ["Solicitado", "Aprobado", "En tránsito"];
 
 const MOTIVOS_BAJA = [
   "Daño irreparable",
@@ -83,10 +95,12 @@ function siguienteCodigo() {
 async function cargarDatos() {
   const resultados = await Promise.all([
     leerInventario(),
-    leerMovimientosActivos()
+    leerMovimientosActivos(),
+    leerTraslados()
   ]);
   inventario = resultados[0];
   movimientos = resultados[1];
+  traslados = resultados[2];
 }
 
 function crearPantalla(dibujar) {
@@ -319,12 +333,13 @@ export const mostrarGestionarActivos = crearPantalla(function () {
       '<form id="formEditarActivo" class="formulario-grid">' +
       '<label>Nombre *<input id="editNombre" required maxlength="100" value="' + escapar(elemento.nombre) + '"></label>' +
       '<label>Estado físico *<select id="editEstado">' + opciones(ESTADOS) + "</select></label>" +
-      '<label>Responsable<input id="editResponsable" maxlength="80" value="' + escapar(elemento.responsable || "") + '"></label>' +
+      '<label>Responsable *<select id="editResponsable" required>' + opciones(RESPONSABLES, "Elige...") + "</select></label>" +
       '<label class="ancho-completo">Observaciones<input id="editObservaciones" maxlength="300" value="' + escapar(elemento.observaciones || "") + '"></label>' +
       '<button type="submit" class="boton ancho-completo">Guardar cambios</button>' +
       "</form></div>";
 
     document.getElementById("editEstado").value = elemento.estado;
+    document.getElementById("editResponsable").value = elemento.responsable || "";
     document.getElementById("cerrarEdicionActivo").addEventListener("click", function () {
       document.getElementById("detalleActivo").innerHTML = "";
     });
@@ -337,7 +352,7 @@ export const mostrarGestionarActivos = crearPantalla(function () {
           codigo: elemento.codigo,
           nombre: document.getElementById("editNombre").value.trim(),
           estado: document.getElementById("editEstado").value,
-          responsable: document.getElementById("editResponsable").value.trim(),
+          responsable: document.getElementById("editResponsable").value,
           observaciones: document.getElementById("editObservaciones").value.trim()
         }], usuario.rol);
 
@@ -367,8 +382,19 @@ export const mostrarGestionarActivos = crearPantalla(function () {
 });
 
 export const mostrarSaldosBajas = crearPantalla(function () {
+  const codigosConTrasladoActivo = new Set(
+    traslados
+      .filter(function (traslado) {
+        return ESTADOS_TRASLADO_ACTIVO.includes(traslado.estado);
+      })
+      .map(function (traslado) {
+        return traslado.codigoElemento;
+      })
+  );
+
   const disponibles = inventario.filter(function (elemento) {
-    return elemento.estadoGestion !== "De baja";
+    return elemento.estadoGestion !== "De baja" &&
+      !codigosConTrasladoActivo.has(elemento.codigo);
   });
   const saldos = inventario.filter(function (elemento) {
     return elemento.estadoGestion === "En lista de saldos";
@@ -385,7 +411,7 @@ export const mostrarSaldosBajas = crearPantalla(function () {
 
   contenido.innerHTML =
     "<h2>Gestionar saldos y bajas</h2>" +
-    '<p class="aviso">Los elementos en saldo pueden reutilizarse. Una baja retira el activo de la operación sin borrar su historial.</p>' +
+    '<p class="aviso">Los elementos en saldo pueden reutilizarse. Una baja retira el activo de la operación sin borrar su historial. Los activos con traslado solicitado, aprobado o en tránsito no aparecen en la lista.</p>' +
     '<div class="bloque">' +
     '<form id="formDisposicion" class="formulario-grid">' +
     '<label>Activo *<select id="dispActivo" required>' + opcionesActivos + "</select></label>" +

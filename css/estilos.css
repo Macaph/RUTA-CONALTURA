@@ -303,9 +303,11 @@ input:focus {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.menu button.activo {
-  background: var(--lima);
-  color: var(--petroleo);
+/* Mejora de contraste para la opción activa del menú */
+.menu button.activo,
+.menu-lateral .menu button.activo {
+  color: #17333a;
+  font-weight: 700;
 }
 
 /* ----- Etiqueta del rol (arriba a la derecha y en Usuarios) ----- */
