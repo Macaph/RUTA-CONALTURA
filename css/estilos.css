@@ -831,12 +831,12 @@ code {
 }
 
 /* =========================================================
-   MARCA DE AGUA EN LA PANTALLA DE INGRESO
+   MARCA DE AGUA DE FONDO
    La imagen cubre todo el fondo con 10% de opacidad
-   (90% transparente). Solo se ve mientras body tiene
-   la clase "en-ingreso".
+   (90% transparente). Se ve en el ingreso y en las
+   pantallas de todos los usuarios.
    ========================================================= */
-body.en-ingreso::before {
+body::before {
   content: "";
   position: fixed;
   inset: 0;                       /* ocupa toda la pantalla */

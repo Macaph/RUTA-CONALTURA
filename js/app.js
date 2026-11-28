@@ -47,12 +47,7 @@ const ROLES = {
   bodeguista: {
     nombre: "Bodeguista",
     descripcion: "Gestiona la bodega, envía y recibe elementos.",
-    bienvenida: "Desde la bodega puedes:",
-    puedeHacer: [
-      "Registrar lo que llega y lo que se guarda en la bodega.",
-      "Despachar los traslados aprobados y confirmar cuando llegan a su destino.",
-      "Consultar el inventario y el historial de todos los traslados."
-    ],
+    parrafo: "Registra lo que llega a la bodega, despacha y recibe los traslados aprobados y consulta el historial de todos los movimientos.",
     opciones: [
       "Ver inventario",
       "Registrar elementos",
@@ -64,13 +59,7 @@ const ROLES = {
   administrador: {
     nombre: "Administrador",
     descripcion: "Acceso completo y control del sistema.",
-    bienvenida: "Como administrador puedes:",
-    puedeHacer: [
-      "Ver y controlar el inventario de todas las salas, apartamentos modelo y la bodega.",
-      "Registrar elementos, que quedan aprobados de una vez.",
-      "Gestionar traslados y compras, y consultar los reportes.",
-      "Ver qué puede hacer cada rol en el sistema."
-    ],
+    parrafo: "Controla el inventario de todas las salas, apartamentos modelo y la bodega, gestiona los traslados y las compras, y consulta los reportes y los permisos de cada rol.",
     opciones: [
       "Ver inventario",
       "Registrar elementos",
@@ -85,14 +74,7 @@ const ROLES = {
   compras: {
     nombre: "Administración de Activos y Adquisiciones",
     descripcion: "Gestiona adquisiciones, activos, saldos, bajas y valoración económica básica.",
-    bienvenida: "Desde Administración de Activos y Adquisiciones puedes:",
-    puedeHacer: [
-      "Revisar las solicitudes de compra antes de realizar una nueva adquisición.",
-      "Registrar las adquisiciones y crear los activos en el inventario.",
-      "Consultar y actualizar la información básica de los activos.",
-      "Gestionar saldos y bajas sin perder la trazabilidad.",
-      "Consultar la valoración operativa por proyecto y agrupación."
-    ],
+    parrafo: "Revisa las solicitudes de compra, registra las adquisiciones y gestiona los activos, los saldos, las bajas y su valoración por proyecto.",
     opciones: [
       "Ver inventario",
       "Revisar solicitudes de compra",
@@ -108,12 +90,7 @@ const ROLES = {
   coordinador: {
     nombre: "Coordinador",
     descripcion: "Está a cargo de la sala: aprueba el inventario y las solicitudes.",
-    bienvenida: "Como coordinador de las salas puedes:",
-    puedeHacer: [
-      "Revisar y aprobar el inventario que registran las salas, la bodega y compras.",
-      "Aprobar o rechazar los traslados entre salas, apartamentos modelo y bodega.",
-      "Consultar los reportes del estado de cada espacio."
-    ],
+    parrafo: "Aprueba el inventario que registran las salas, la bodega y compras, decide los traslados entre espacios y consulta los reportes de cada sala.",
     opciones: [
       "Ver inventario",
       "Aprobar inventario",
@@ -369,20 +346,10 @@ function abrirOpcion(opcion) {
 function mostrarInicio() {
   const rol = ROLES[usuarioConectado.rol];
 
-  let html = "<h2>Bienvenido(a), " + rol.nombre + "</h2>";
-  if (rol.parrafo) {
-    html += '<p class="parrafo-inicio">' + rol.parrafo + "</p>";
-  } else {
-    html += '<p class="bienvenida">' + rol.bienvenida + "</p>";
-    html += '<ul class="lista-inicio">';
-    for (const frase of rol.puedeHacer) {
-      html += "<li>" + frase + "</li>";
-    }
-    html += "</ul>";
-  }
-  html += '<p class="ayuda-menu">Usa el menú para empezar.</p>';
-
-  contenido.innerHTML = html;
+  // Saludo + un párrafo corto con lo que puede hacer ese rol
+  contenido.innerHTML =
+    "<h2>Bienvenido(a), " + rol.nombre + "</h2>" +
+    '<p class="parrafo-inicio">' + rol.parrafo + "</p>";
 }
 
 // =====================================================================
